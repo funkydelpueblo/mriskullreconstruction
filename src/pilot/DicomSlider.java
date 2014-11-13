@@ -1,9 +1,11 @@
 package pilot;
 
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import util.ImageProcessing;
 import external.DicomHeaderReader;
 import external.DicomReader;
 import net.miginfocom.swing.MigLayout;
@@ -23,6 +26,7 @@ public class DicomSlider {
 
 	JFileChooser fileChooser;
 	JButton openButton;
+	JButton flipButton;
 	JLabel imageLabel;
 	JSlider slider;
 	
@@ -32,6 +36,7 @@ public class DicomSlider {
 		
 		imageLabel = new JLabel();
 		openButton = new JButton("Open .dcm directory");
+		flipButton = new JButton("Flip slices");
 		
 		slider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
 		slider.setMajorTickSpacing(10);
@@ -39,14 +44,16 @@ public class DicomSlider {
 		slider.setPaintTicks(true);
 		slider.setPreferredSize(new Dimension(300, 40));
 		
-		MigLayout layout = new MigLayout("", "[640px]", "[][640px][]");
+		MigLayout layout = new MigLayout("", "[320px][320px]", "[][640px][]");
 		JPanel panel = new JPanel();
 		panel.setLayout(layout);
 		panel.add(openButton, "cell 0 0");
-		panel.add(imageLabel, "cell 0 1");
-		panel.add(slider, "cell 0 2");
+		panel.add(flipButton, "cell 1 0");
+		panel.add(imageLabel, "cell 0 1 2 1");
+		panel.add(slider, "cell 0 2 2 1");
 		
 		openButton.addActionListener(new OpenDirectoryListener(panel));
+		flipButton.addActionListener(new FlipSlicesListener());
 		slider.addChangeListener(new ImageSlideListener());
 		
 		return panel;
@@ -142,6 +149,47 @@ public class DicomSlider {
 		    //}
 		}
 		
+	}
+	
+	private class FlipSlicesListener implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			BufferedImage[] temp = new BufferedImage[dicomFiles.length];
+			for(int i = 0; i < dicomFiles.length; i++){
+				temp[i] = toBufferedImage(dicomFiles[i]);
+			}
+			dicomFiles = ImageProcessing.flipAxes(temp);
+			slider.setMaximum(dicomFiles.length - 1);
+			imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
+		}
+		
+	}
+	
+	/**
+	 * Converts a given Image into a BufferedImage
+	 * From StackOverflow #13605248
+	 *
+	 * @param img The Image to be converted
+	 * @return The converted BufferedImage
+	 */
+	public static BufferedImage toBufferedImage(Image img)
+	{
+	    if (img instanceof BufferedImage)
+	    {
+	        return (BufferedImage) img;
+	    }
+
+	    // Create a buffered image with transparency
+	    BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+	    // Draw the image on to the buffered image
+	    Graphics2D bGr = bimage.createGraphics();
+	    bGr.drawImage(img, 0, 0, null);
+	    bGr.dispose();
+
+	    // Return the buffered image
+	    return bimage;
 	}
 	
 	private void createAndShowGUI() {
