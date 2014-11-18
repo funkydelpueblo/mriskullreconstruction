@@ -11,6 +11,8 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 
 import javax.imageio.ImageIO;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 
 public class ImageProcessing {
 
@@ -20,9 +22,10 @@ public class ImageProcessing {
 	/**
 	 * Flip direction of slices from top to bottom to left to right
 	 * @param slices
+	 * @param progress 
 	 * @return
 	 */
-	public static Image[] flipAxes(BufferedImage[] slices){
+	public static Image[] flipAxes(BufferedImage[] slices, JProgressBar progress){
 		// 1. Turn images into pixel array.
 		int[][][] pixels = new int[slices.length][][];
 		
@@ -44,8 +47,11 @@ public class ImageProcessing {
 			}
 		}
 		
-		int sampleLength = pixels[0][0].length / SAMPLE_FACTOR;
+		final int sampleLength = pixels[0][0].length / SAMPLE_FACTOR;
 		Image[] flipped = new Image[sampleLength];
+		
+		SwingUtilities.invokeLater(() -> progress.setMinimum(0));
+		SwingUtilities.invokeLater(() -> progress.setMaximum(sampleLength)); //feedback
 		
 		//2. Flip image pixels
 		//int[][][] result = new int[pixels[0][0].length][][];
@@ -66,6 +72,8 @@ public class ImageProcessing {
 			//3. Turn back into iamge
 			flipped[x/4] = getImage(transposeOutOfPlace(newslice));
 			
+			final int prog = x/4;
+			SwingUtilities.invokeLater(() -> progress.setValue(prog));
 			if(x % 10 == 0){ System.out.println("Processed " + x + " images"); }
 		}
 		

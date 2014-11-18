@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -29,6 +30,10 @@ public class DicomSlider {
 	JButton flipButton;
 	JLabel imageLabel;
 	JSlider slider;
+	
+	//Progress
+	JProgressBar progress;
+	JLabel progressLabel;
 	
 	public JPanel createPanel(){
 		fileChooser = new JFileChooser("/Users/aaron/Documents/Dropbox/Schoolwork/BioGeo/MRIReconstructData");
@@ -48,12 +53,23 @@ public class DicomSlider {
 		JPanel panel = new JPanel();
 		panel.setLayout(layout);
 		panel.add(openButton, "cell 0 0");
-		panel.add(flipButton, "cell 1 0");
+		//panel.add(flipButton, "cell 1 0");
 		panel.add(imageLabel, "cell 0 1 2 1");
 		panel.add(slider, "cell 0 2 2 1");
 		
+		//Progress
+		progress = new JProgressBar();
+		progressLabel = new JLabel();
+		MigLayout progressLayout = new MigLayout("", "[]", "[][]");
+		JPanel progressPanel = new JPanel();
+		progressPanel.setLayout(progressLayout);
+		progressPanel.add(progress, "cell 0 0");
+		progressPanel.add(progressLabel, "cell 0 1");
+		
+		panel.add(progressPanel, "cell 1 0");
+		
 		openButton.addActionListener(new OpenDirectoryListener(panel));
-		flipButton.addActionListener(new FlipSlicesListener());
+		//flipButton.addActionListener(new FlipSlicesListener());
 		slider.addChangeListener(new ImageSlideListener());
 		
 		return panel;
@@ -71,9 +87,9 @@ public class DicomSlider {
 			int returnVal = fileChooser.showOpenDialog(this.panel);
 			 
 	        if (returnVal == JFileChooser.APPROVE_OPTION) {
+	        	// 1) Load all DICOM files
 	            File file = fileChooser.getSelectedFile();
 	            loadAllDicom(file);
-	            imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
 	        }
 		}
 	}
@@ -81,52 +97,89 @@ public class DicomSlider {
 	Image[] dicomFiles;
 	
 	private void loadAllDicom(File folder){
-		// 1. Load all the .DCM files in the directory
-		File[] files = folder.listFiles(new FileFilter(){
+		SwingWorker<Image[], Image[]> loadWorker = new SwingWorker<Image[], Image[]>(){
+			
 			@Override
-			public boolean accept(File pathname) {
-				// TODO Auto-generated method stub
-				return getFileExtension(pathname).equals(".dcm");
+			protected Image[] doInBackground() throws Exception {
+				SwingUtilities.invokeLater(() -> progressLabel.setText("Loading DICOM files..."));
+				
+				Image[] result;
+				
+				// 1. Load all the .DCM files in the directory
+				File[] files = folder.listFiles(new FileFilter(){
+					@Override
+					public boolean accept(File pathname) {
+						// TODO Auto-generated method stub
+						return getFileExtension(pathname).equals(".dcm");
+					}
+				});
+				
+				SwingUtilities.invokeLater(() -> progress.setMaximum(0));
+				SwingUtilities.invokeLater(() -> progress.setMaximum(files.length + 20)); //feedback
+				
+				// 2. Sort based on sliceLocation
+				
+				Arrays.sort(files, new Comparator<File>(){
+					@SuppressWarnings("deprecation")
+					@Override
+					public int compare(File o1, File o2) {
+						try {
+							DicomReader readerA = new DicomReader(o1.toURL());
+							DicomReader readerB = new DicomReader(o2.toURL());
+							double aLoc = Double.parseDouble(readerA.getDicomHeaderReader().getaString(0x0020, 0x1041));
+							double bLoc = Double.parseDouble(readerB.getDicomHeaderReader().getaString(0x0020, 0x1041));
+							return (int)(aLoc - bLoc);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						return 0;
+					}
+				});
+				
+				SwingUtilities.invokeLater(() -> progress.setValue(20));
+				
+				// 3. Load the image data into an array
+				result = new Image[files.length];
+				for(int i = 0; i < files.length; i++){
+					try {
+						DicomReader reader = new DicomReader(files[i].toURL());
+						result[i] = reader.getImage();
+					} catch (MalformedURLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					final int percent = i;
+					SwingUtilities.invokeLater(() -> progress.setValue(percent + 20)); //feedback
+				}
+				
+				//4. Update Slider max...
+				SwingUtilities.invokeLater(() -> resetProgress());
+				return result;
 			}
-		});
-		
-		// 2. Sort based on sliceLocation
-		
-		Arrays.sort(files, new Comparator<File>(){
-			@SuppressWarnings("deprecation")
-			@Override
-			public int compare(File o1, File o2) {
+			
+			public void done(){
+				Image[] results = null;
 				try {
-					DicomReader readerA = new DicomReader(o1.toURL());
-					DicomReader readerB = new DicomReader(o2.toURL());
-					double aLoc = Double.parseDouble(readerA.getDicomHeaderReader().getaString(0x0020, 0x1041));
-					double bLoc = Double.parseDouble(readerB.getDicomHeaderReader().getaString(0x0020, 0x1041));
-					return (int)(aLoc - bLoc);
-				} catch (IOException e) {
+					results = this.get();
+				} catch (InterruptedException | ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				return 0;
+				System.out.println("DONE! " + results);
+				dicomFiles = results;
+				slider.setMaximum(dicomFiles.length - 1);
+				System.out.println(dicomFiles.length);
+				flipAllSlices();
 			}
-		});
+			
+		};
+
+		loadWorker.execute();
 		
-		// 3. Load the image data into an array
-		dicomFiles = new Image[files.length];
-		for(int i = 0; i < files.length; i++){
-			try {
-				DicomReader reader = new DicomReader(files[i].toURL());
-				dicomFiles[i] = reader.getImage();
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		//4. Update Slider max...
-		slider.setMaximum(dicomFiles.length - 1);
 	}
 	
 	private String getFileExtension(File file) {
@@ -151,6 +204,37 @@ public class DicomSlider {
 		
 	}
 	
+	private void flipAllSlices(){
+		SwingWorker<Image[], Image[]> loadWorker = new SwingWorker<Image[], Image[]>(){
+
+			private Image[] results;
+
+			@Override
+			protected Image[] doInBackground() throws Exception {
+				SwingUtilities.invokeLater(() -> progressLabel.setText("Aligning axes..."));
+				SwingUtilities.invokeLater(() -> progress.setValue(0));
+				
+				BufferedImage[] temp = new BufferedImage[dicomFiles.length];
+				for(int i = 0; i < dicomFiles.length; i++){
+					temp[i] = toBufferedImage(dicomFiles[i]);
+				}
+				
+				results = ImageProcessing.flipAxes(temp, progress);
+				return null;
+			}
+			
+			public void done(){
+				dicomFiles = results;
+				System.out.println(dicomFiles.length);
+				slider.setMaximum(dicomFiles.length - 1);
+				imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
+				resetProgress();
+			}
+			
+		};
+		loadWorker.execute();
+	}
+	
 	private class FlipSlicesListener implements ActionListener{
 
 		@Override
@@ -159,11 +243,16 @@ public class DicomSlider {
 			for(int i = 0; i < dicomFiles.length; i++){
 				temp[i] = toBufferedImage(dicomFiles[i]);
 			}
-			dicomFiles = ImageProcessing.flipAxes(temp);
+			dicomFiles = ImageProcessing.flipAxes(temp, progress);
 			slider.setMaximum(dicomFiles.length - 1);
 			imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
 		}
 		
+	}
+	
+	private void resetProgress(){
+		this.progress.setValue(0);
+		this.progressLabel.setText("");
 	}
 	
 	/**
