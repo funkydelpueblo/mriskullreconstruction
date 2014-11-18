@@ -31,7 +31,7 @@ public class DicomSlider {
 	JSlider slider;
 	
 	public JPanel createPanel(){
-		fileChooser = new JFileChooser("");
+		fileChooser = new JFileChooser("/Users/aaron/Documents/Dropbox/Schoolwork/BioGeo/MRIReconstructData");
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
 		imageLabel = new JLabel();

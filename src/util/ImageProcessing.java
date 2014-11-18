@@ -50,7 +50,7 @@ public class ImageProcessing {
 			//result[x] = newslice;
 			
 			//3. Turn back into iamge
-			flipped[x/4] = getImage(newslice, sm);
+			flipped[x/4] = getImage(newslice);
 			
 			if(x % 10 == 0){ System.out.println("Processed " + x + " images"); }
 		}
