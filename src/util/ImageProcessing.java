@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 public class ImageProcessing {
 
 	final static int SAMPLE_FACTOR = 4;
+	final static int STRETCH_FACTOR = 2;
 	
 	/**
 	 * Flip direction of slices from top to bottom to left to right
@@ -50,14 +51,15 @@ public class ImageProcessing {
 		//int[][][] result = new int[pixels[0][0].length][][];
 		System.out.println("Need to process " + sampleLength + " images");
 		for(int x = 0; x < pixels[0][0].length; x+=SAMPLE_FACTOR){
-			int[][] newslice = new int[pixels.length][pixels[0].length];
+			int[][] newslice = new int[pixels.length * STRETCH_FACTOR][pixels[0].length];
 			for(int z = 0; z < pixels.length; z++){
 				int[] row = new int[pixels[0].length];
 				
 				for(int y = 0; y < pixels[0].length; y++){
 					row[y] = pixels[z][y][x];
 				}
-				newslice[z] = row;
+				newslice[(z * STRETCH_FACTOR)] = row;
+				newslice[(z * STRETCH_FACTOR) + 1] = row;
 			}
 			//result[x] = newslice;
 			
