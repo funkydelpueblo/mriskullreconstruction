@@ -31,7 +31,7 @@ public class DicomSlider {
 	JSlider slider;
 	
 	public JPanel createPanel(){
-		fileChooser = new JFileChooser("/Users/aaron/Documents/Dropbox/Schoolwork/BioGeo/");
+		fileChooser = new JFileChooser("");
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
 		imageLabel = new JLabel();
@@ -161,6 +161,8 @@ public class DicomSlider {
 			}
 			dicomFiles = ImageProcessing.flipAxes(temp);
 			slider.setMaximum(dicomFiles.length - 1);
+			//dicomFiles = new Image[1];
+			//dicomFiles[0] = ImageProcessing.getImage(null, null);
 			imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
 		}
 		

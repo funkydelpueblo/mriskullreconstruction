@@ -72,22 +72,21 @@ public class ImageProcessing {
 	}
 	
 	// From StackOverflow #15002706
-	public static java.awt.Image getImage(int pixels[][], SampleModel sampleModel){
+	public static java.awt.Image getImage(int pixels[][]){
 	     int w=pixels.length;
 	     int h=pixels[0].length;
 	     
-	    WritableRaster raster= Raster.createWritableRaster(sampleModel, new Point(0,0));
-	    for(int i=0;i<w;i++)
+	    BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
+	    WritableRaster raster = bi.getRaster();
+		for(int i=0;i<w;i++)
 	    {
 	         for(int j=0;j<h;j++)
 	         {
-	             raster.setSample(i,j,0,pixels[i][j]);
+	             raster.setSample(i,j,0,(int)pixels[i][j]);
 	         }
 	    }
 
-	    BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_BYTE_GRAY);
-	    image.setData(raster);
-		return image;
+		return bi;
 	}
 	
 	//From StackOverflow: #6524196
@@ -98,7 +97,16 @@ public class ImageProcessing {
 	      final boolean hasAlphaChannel = image.getAlphaRaster() != null;
 
 	      int[][] result = new int[height][width];
-	      if (hasAlphaChannel) {
+	      for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += 1) {
+	            result[row][col] = pixels[pixel];
+	            row++;
+	            if (row == height) {
+	               row = 0;
+	               col++;
+	            }
+	         }
+	      
+	      /*if (hasAlphaChannel) {
 	         final int pixelLength = 4;
 	         for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += pixelLength) {
 	            int argb = 0;
@@ -128,7 +136,7 @@ public class ImageProcessing {
 	               row++;
 	            }
 	         }
-	      }
+	      }*/
 
 	      return result;
 	   }
