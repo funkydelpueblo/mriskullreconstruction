@@ -29,9 +29,21 @@ public class ImageProcessing {
 			pixels[i] = intArrayFromImage(slices[i]);
 		}
 		
+		//Flip image 90 degrees
+		//TODO: Account for this underneath
+		for(int k = 0; k < pixels.length; k++){
+			assert pixels[k].length == pixels[k][0].length;
+			int m = pixels[k].length;
+			for(int i = 0; i < m; i++) {
+				for(int j = i+1; j < m; j++) {
+					int temp = pixels[k][i][j];
+					pixels[k][i][j] = pixels[k][j][i];
+					pixels[k][j][i] = temp;
+				}
+			}
+		}
 		
 		int sampleLength = pixels[0][0].length / SAMPLE_FACTOR;
-		SampleModel sm = slices[0].getSampleModel();
 		Image[] flipped = new Image[sampleLength];
 		
 		//2. Flip image pixels
@@ -43,19 +55,34 @@ public class ImageProcessing {
 				int[] row = new int[pixels[0].length];
 				
 				for(int y = 0; y < pixels[0].length; y++){
-					row[y] = pixels[z][y][x/4];
+					row[y] = pixels[z][y][x];
 				}
 				newslice[z] = row;
 			}
 			//result[x] = newslice;
 			
 			//3. Turn back into iamge
-			flipped[x/4] = getImage(newslice);
+			flipped[x/4] = getImage(transposeOutOfPlace(newslice));
 			
 			if(x % 10 == 0){ System.out.println("Processed " + x + " images"); }
 		}
 		
 		return flipped;
+	}
+	
+	//From StackOverflow: #8422374
+	private static int[][] transposeOutOfPlace(int[][] array){
+		  int width = array.length;
+		  int height = array[0].length;
+
+		  int[][] array_new = new int[height][width];
+
+		  for (int x = 0; x < width; x++) {
+		    for (int y = 0; y < height; y++) {
+		      array_new[y][width - x - 1] = array[x][y];
+		    }
+		  }
+		  return array_new;
 	}
 	
 	//From StackOverflow: #1604319

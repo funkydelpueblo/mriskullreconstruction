@@ -42,7 +42,7 @@ public class DicomSlider {
 		slider.setMajorTickSpacing(10);
 		slider.setPaintLabels(true);
 		slider.setPaintTicks(true);
-		slider.setPreferredSize(new Dimension(300, 40));
+		slider.setPreferredSize(new Dimension(500, 40));
 		
 		MigLayout layout = new MigLayout("", "[320px][320px]", "[][640px][]");
 		JPanel panel = new JPanel();
@@ -161,8 +161,6 @@ public class DicomSlider {
 			}
 			dicomFiles = ImageProcessing.flipAxes(temp);
 			slider.setMaximum(dicomFiles.length - 1);
-			//dicomFiles = new Image[1];
-			//dicomFiles[0] = ImageProcessing.getImage(null, null);
 			imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
 		}
 		
