@@ -8,6 +8,7 @@ import org.opencv.core.Mat;
 
 public class OpenCVUtil {
 	
+	// From http://enfanote.blogspot.com/2013/06/converting-java-bufferedimage-to-opencv.html
 	public static Mat bufferedImageToMat(BufferedImage myBufferedImage){
 		BufferedImage image = myBufferedImage;
 		byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
@@ -16,6 +17,7 @@ public class OpenCVUtil {
 		return mat;
 	}
 
+	// From http://enfanote.blogspot.com/2013/06/converting-java-bufferedimage-to-opencv.html
 	public static BufferedImage matToBufferedImage(Mat myMat){
 		Mat mat = myMat;
 		byte[] data = new byte[mat.rows()*mat.cols()*(int)(mat.elemSize())];

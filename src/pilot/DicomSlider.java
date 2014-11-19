@@ -242,19 +242,12 @@ public class DicomSlider {
 		loadWorker.execute();
 	}
 	
-	private class FlipSlicesListener implements ActionListener{
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			BufferedImage[] temp = new BufferedImage[dicomFiles.length];
-			for(int i = 0; i < dicomFiles.length; i++){
-				temp[i] = toBufferedImage(dicomFiles[i]);
-			}
-			dicomFiles = ImageProcessing.flipAxes(temp, progress);
-			slider.setMaximum(dicomFiles.length - 1);
-			imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
+	public void thresholdImages(int threshold){
+		for(int i = 0; i < dicomFiles.length; i++){
+			dicomFiles[i] = ImageProcessing.threshold(toBufferedImage(dicomFiles[i]), threshold);
+			imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 		}
-		
+		System.out.println("Done thresholding.");
 	}
 	
 	private void resetProgress(){

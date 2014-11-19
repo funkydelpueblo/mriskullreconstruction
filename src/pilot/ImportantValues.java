@@ -2,5 +2,5 @@ package pilot;
 
 public class ImportantValues {
 
-	public int threshold;
+	public static int threshold;
 }

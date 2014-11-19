@@ -15,6 +15,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class ImageProcessing {
@@ -173,5 +174,22 @@ public class ImageProcessing {
 		Mat result = new Mat(imageMat.rows(), imageMat.cols(), imageMat.type());
 		org.opencv.imgproc.Imgproc.threshold(imageMat, result, th, 255, Imgproc.THRESH_BINARY);
 		return OpenCVUtil.matToBufferedImage(result);
+	}
+	
+	final static int elem_size = 1;
+	
+	public static BufferedImage openThenClose(BufferedImage input){
+		Mat A = OpenCVUtil.bufferedImageToMat(input);
+		Mat B = new Mat(A.rows(), A.cols(), A.type());
+		
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2*elem_size + 1, 2*elem_size+1));
+        //Open
+        Imgproc.erode(A, B, element);
+        Imgproc.dilate(B, A, element);
+        //Close
+        Imgproc.dilate(A, B, element);
+        Imgproc.erode(B, A, element);
+        
+        return OpenCVUtil.matToBufferedImage(A);
 	}
 }
