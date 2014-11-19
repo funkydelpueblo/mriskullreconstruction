@@ -18,6 +18,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.opencv.core.Core;
+
 import util.ImageProcessing;
 import external.DicomHeaderReader;
 import external.DicomReader;
@@ -49,7 +51,7 @@ public class DicomSlider {
 		slider.setPaintTicks(true);
 		slider.setPreferredSize(new Dimension(500, 40));
 		
-		MigLayout layout = new MigLayout("", "[320px][320px]", "[][640px][]");
+		MigLayout layout = new MigLayout("", "[320px][320px]", "[][400px][]");
 		JPanel panel = new JPanel();
 		panel.setLayout(layout);
 		panel.add(openButton, "cell 0 0");
@@ -101,6 +103,7 @@ public class DicomSlider {
 			
 			@Override
 			protected Image[] doInBackground() throws Exception {
+				SwingUtilities.invokeLater(() -> openButton.setEnabled(false));
 				SwingUtilities.invokeLater(() -> progressLabel.setText("Loading DICOM files..."));
 				
 				Image[] result;
@@ -171,7 +174,7 @@ public class DicomSlider {
 				}
 				System.out.println("DONE! " + results);
 				dicomFiles = results;
-				slider.setMaximum(dicomFiles.length - 1);
+				//slider.setMaximum(dicomFiles.length - 1);
 				System.out.println(dicomFiles.length);
 				flipAllSlices();
 			}
@@ -229,6 +232,10 @@ public class DicomSlider {
 				slider.setMaximum(dicomFiles.length - 1);
 				imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
 				resetProgress();
+				
+				//Open threshold window
+				ThresholdSlider thresholdSlider = new ThresholdSlider(dicomFiles[(int)(dicomFiles.length/2)], DicomSlider.this);
+				thresholdSlider.createAndShowGUI();
 			}
 			
 		};
@@ -297,6 +304,9 @@ public class DicomSlider {
 	public static void main(String[] args){
 	SwingUtilities.invokeLater(new Runnable() {
         public void run() {
+        	//Make sure we access proper OpenCV libraries before anything else!
+        	System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        	
             //Turn off metal's use of bold fonts
             UIManager.put("swing.boldMetal", Boolean.FALSE); 
             DicomSlider slider = new DicomSlider();

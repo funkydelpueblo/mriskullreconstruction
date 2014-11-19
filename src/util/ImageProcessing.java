@@ -14,6 +14,9 @@ import javax.imageio.ImageIO;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 public class ImageProcessing {
 
 	final static int SAMPLE_FACTOR = 4;
@@ -95,25 +98,29 @@ public class ImageProcessing {
 		  return array_new;
 	}
 	
-	//From StackOverflow: #1604319
-	private static int[] getPixelData(BufferedImage img, int x, int y) {
-		int argb = img.getRGB(x, y);
-
-		int rgb[] = new int[] {
-		    (argb >> 16) & 0xff, //red
-		    (argb >>  8) & 0xff, //green
-		    (argb      ) & 0xff  //blue
-		};
-		
-		return rgb;
-	}
-	
 	// From StackOverflow #15002706
-	public static java.awt.Image getImage(int pixels[][]){
+	public static BufferedImage getImage(int pixels[][]){
 	     int w=pixels.length;
 	     int h=pixels[0].length;
 	     
 	    BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
+	    WritableRaster raster = bi.getRaster();
+		for(int i=0;i<w;i++)
+	    {
+	         for(int j=0;j<h;j++)
+	         {
+	             raster.setSample(i,j,0,(int)pixels[i][j]);
+	         }
+	    }
+
+		return bi;
+	}
+	
+	public static BufferedImage getBinaryImage(byte pixels[][]){
+	     int w=pixels.length;
+	     int h=pixels[0].length;
+	     
+	    BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_BINARY);
 	    WritableRaster raster = bi.getRaster();
 		for(int i=0;i<w;i++)
 	    {
@@ -131,7 +138,6 @@ public class ImageProcessing {
 	      final int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 	      final int width = image.getWidth();
 	      final int height = image.getHeight();
-	      final boolean hasAlphaChannel = image.getAlphaRaster() != null;
 
 	      int[][] result = new int[height][width];
 	      for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += 1) {
@@ -142,39 +148,30 @@ public class ImageProcessing {
 	               col++;
 	            }
 	         }
-	      
-	      /*if (hasAlphaChannel) {
-	         final int pixelLength = 4;
-	         for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += pixelLength) {
-	            int argb = 0;
-	            argb += (((int) pixels[pixel] & 0xff) << 24); // alpha
-	            argb += ((int) pixels[pixel + 1] & 0xff); // blue
-	            argb += (((int) pixels[pixel + 2] & 0xff) << 8); // green
-	            argb += (((int) pixels[pixel + 3] & 0xff) << 16); // red
-	            result[row][col] = argb;
-	            col++;
-	            if (col == width) {
-	               col = 0;
-	               row++;
-	            }
-	         }
-	      } else {
-	         final int pixelLength = 3;
-	         for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += pixelLength) {
-	            int argb = 0;
-	            argb += -16777216; // 255 alpha
-	            argb += ((int) pixels[pixel] & 0xff); // blue
-	            argb += (((int) pixels[pixel + 1] & 0xff) << 8); // green
-	            argb += (((int) pixels[pixel + 2] & 0xff) << 16); // red
-	            result[row][col] = argb;
-	            col++;
-	            if (col == width) {
-	               col = 0;
-	               row++;
-	            }
-	         }
-	      }*/
-
 	      return result;
 	   }
+	
+	public static byte[][] byteArrayFromImage(BufferedImage image) {
+	      final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+	      final int width = image.getWidth();
+	      final int height = image.getHeight();
+
+	      byte[][] result = new byte[height][width];
+	      for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += 1) {
+	            result[row][col] = pixels[pixel];
+	            row++;
+	            if (row == height) {
+	               row = 0;
+	               col++;
+	            }
+	         }
+	      return result;
+	   }
+	
+	public static BufferedImage threshold(BufferedImage input, int th){
+		Mat imageMat = OpenCVUtil.bufferedImageToMat(input);
+		Mat result = new Mat(imageMat.rows(), imageMat.cols(), imageMat.type());
+		org.opencv.imgproc.Imgproc.threshold(imageMat, result, th, 255, Imgproc.THRESH_BINARY);
+		return OpenCVUtil.matToBufferedImage(result);
+	}
 }
