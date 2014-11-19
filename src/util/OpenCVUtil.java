@@ -1,10 +1,12 @@
 package util;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 
 public class OpenCVUtil {
 	
@@ -32,5 +34,12 @@ public class OpenCVUtil {
 		BufferedImage image = new BufferedImage(mat.cols(), mat.rows(), BufferedImage.TYPE_BYTE_GRAY);
 		image.getRaster().setDataElements(0, 0, mat.cols(), mat.rows(), data);
 		return image;
+	}
+	
+	public static BufferedImage addLine(BufferedImage img, Point start, Point end){
+		Mat mat = bufferedImageToMat(img);
+		org.opencv.imgproc.Imgproc.line(mat, new org.opencv.core.Point(start.getX(),  start.getY()),
+				 new org.opencv.core.Point(end.getX(),  end.getY()), new Scalar(255, 255, 255), 5);
+		return matToBufferedImage(mat);
 	}
 }

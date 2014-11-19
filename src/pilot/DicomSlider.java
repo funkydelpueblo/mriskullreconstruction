@@ -21,6 +21,7 @@ import javax.swing.event.ChangeListener;
 import org.opencv.core.Core;
 
 import util.ImageProcessing;
+import util.OpenCVUtil;
 import external.DicomHeaderReader;
 import external.DicomReader;
 import net.miginfocom.swing.MigLayout;
@@ -51,7 +52,7 @@ public class DicomSlider {
 		slider.setPaintTicks(true);
 		slider.setPreferredSize(new Dimension(500, 40));
 		
-		MigLayout layout = new MigLayout("", "[320px][320px]", "[][400px][]");
+		MigLayout layout = new MigLayout("", "[320px][320px]", "[][400px][40px]");
 		JPanel panel = new JPanel();
 		panel.setLayout(layout);
 		panel.add(openButton, "cell 0 0");
@@ -201,7 +202,7 @@ public class DicomSlider {
 			JSlider source = (JSlider)e.getSource();
 			//if (!source.getValueIsAdjusting()) {
 		        int slice = (int)source.getValue();
-		        imageLabel.setIcon(new ImageIcon(dicomFiles[slice]));
+		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(toBufferedImage(dicomFiles[slice]), new java.awt.Point(10, 10), new java.awt.Point(100, 100))));
 		    //}
 		}
 		
@@ -234,7 +235,7 @@ public class DicomSlider {
 				resetProgress();
 				
 				//Open threshold window
-				ThresholdSlider thresholdSlider = new ThresholdSlider(dicomFiles[(int)(dicomFiles.length/2)], DicomSlider.this);
+				ThresholdSlider thresholdSlider = new ThresholdSlider(dicomFiles, DicomSlider.this);
 				thresholdSlider.createAndShowGUI();
 			}
 			

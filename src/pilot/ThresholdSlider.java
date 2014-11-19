@@ -23,7 +23,7 @@ import net.miginfocom.swing.MigLayout;
 public class ThresholdSlider {
 
 	JSlider slider;
-	BufferedImage baseImage;
+	BufferedImage[] baseImages;
 	JLabel imageLabel;
 	JLabel thLabel;
 	JButton accept;
@@ -32,20 +32,27 @@ public class ThresholdSlider {
 	BufferedImage sliceImage;
 	DicomSlider parent;
 	
+	JSlider imageSlider;
 	
-	public ThresholdSlider(Image image, DicomSlider ds){
+	
+	public ThresholdSlider(Image[] images, DicomSlider ds){
 		parent = ds;
-		baseImage = DicomSlider.toBufferedImage(image);
+		baseImages = new BufferedImage[images.length];
+		for(int i = 0; i < images.length; i++){
+			baseImages[i] = DicomSlider.toBufferedImage(images[i]);
+		}
+		START_SLICE = (int)(images.length / 2);
 	}
 	
+	private final int START_SLICE;
 	private final int INITIAL = 127;
 	
 	private JPanel createPanel(){
 		JPanel panel = new JPanel();
-		MigLayout layout = new MigLayout("", "[][][][][]", "[]20[]");
+		MigLayout layout = new MigLayout("", "[][][][][]", "[]20[]10[]");
 		panel.setLayout(layout);
 		
-		sliceImage = ImageProcessing.threshold(baseImage, INITIAL);
+		sliceImage = ImageProcessing.threshold(baseImages[START_SLICE], INITIAL);
 		imageLabel = new JLabel(new ImageIcon(sliceImage));
 		slider = new JSlider(JSlider.HORIZONTAL, 0, 255, INITIAL);
 		slider.setPreferredSize(new Dimension(250, 30));
@@ -56,12 +63,17 @@ public class ThresholdSlider {
 		accept.addActionListener(new SetThresholdListener());
 		openclose = new JCheckBox();
 		
+		imageSlider = new JSlider(0, baseImages.length, START_SLICE);
+		imageSlider.addChangeListener(new ImageSlideListener());
+		
 		panel.add(imageLabel, "cell 0 0 5 1");
 		panel.add(slider, "cell 0 1");
 		panel.add(thLabel, "cell 1 1");
 		panel.add(accept, "cell 2 1");
 		panel.add(new JLabel("Open & Close?"), "cell 3 1");
-		panel.add(openclose);
+		panel.add(openclose, "cell 4 1");
+		
+		panel.add(imageSlider, "cell 0 2 5 1");
 		
 		return panel;
 	}
@@ -71,9 +83,11 @@ public class ThresholdSlider {
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			JSlider source = (JSlider)e.getSource();
-			//if (!source.getValueIsAdjusting()) {
-		       final int th = (int)source.getValue();
-		        sliceImage = ImageProcessing.threshold(baseImage, th);
+			final int th = (int)source.getValue();
+			int slice = imageSlider.getValue();
+			if (source.getValueIsAdjusting()) {
+		       
+		        sliceImage = ImageProcessing.threshold(baseImages[slice], th);
 		        
 		        if(openclose.isSelected()){
 			        sliceImage = ImageProcessing.openThenClose(sliceImage); //Open/Close to clean?
@@ -81,7 +95,19 @@ public class ThresholdSlider {
 		        
 		        SwingUtilities.invokeLater(() -> imageLabel.setIcon(new ImageIcon(sliceImage)));
 		        SwingUtilities.invokeLater(() -> thLabel.setText(th+""));
-		    //}
+		    }
+		}
+	}
+	
+	private class ImageSlideListener implements ChangeListener{
+
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			sliceImage = ImageProcessing.threshold(baseImages[imageSlider.getValue()], slider.getValue());
+			if(openclose.isSelected()){
+		        sliceImage = ImageProcessing.openThenClose(sliceImage); //Open/Close to clean?
+	        }
+			SwingUtilities.invokeLater(() -> imageLabel.setIcon(new ImageIcon(sliceImage)));
 		}
 		
 	}
