@@ -206,7 +206,8 @@ public class DicomSlider {
 			JSlider source = (JSlider)e.getSource();
 			//if (!source.getValueIsAdjusting()) {
 		        int slice = (int)source.getValue();
-		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(toBufferedImage(dicomFiles[slice]), new java.awt.Point(10, 10), new java.awt.Point(100, 100))));
+		        BufferedImage bi = toBufferedImage(dicomFiles[slice]);
+		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(bi, new java.awt.Point(X_LINE, 0), new java.awt.Point(bi.getWidth(), bi.getHeight() - Y_LINE))));
 		    //}
 		}
 		
@@ -263,12 +264,15 @@ public class DicomSlider {
 		this.progressLabel.setText("");
 	}
 	
+	final int X_LINE = 100;
+	final int Y_LINE = 100;
+	
 	public class TryFlood implements ActionListener{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			for(int i = 0; i < dicomFiles.length; i++){
-				dicomFiles[i] = SpecialFill.noteBoundaries(toBufferedImage(dicomFiles[i]), 50, 75, 300, 300);
+				dicomFiles[i] = FillStarTest.specialFlood(toBufferedImage(dicomFiles[i]), X_LINE, Y_LINE);
 				imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 			}
 			System.out.println("Done flooding.");

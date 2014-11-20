@@ -33,10 +33,10 @@ public class FillStarTest {
 	
 	public void createImage(){
 		try {
-		    image = ImageIO.read(new File("./src/head1.jpg"));
+		    image = ImageIO.read(new File("./src/head2.jpg"));
 		    //clean
 		    int[][] pixels = convertTo2DUsingGetRGB(image);
-		    image = specialFlood(image, image.getWidth(), 1, 50);
+		    image = specialFlood(image, 1, 50);
 		    //image = ImageProcessing.getImage(pixels);
 		    //byte[][] temp = ImageProcessing.byteArrayFromImage(image);
 		    //image = ImageProcessing.getBinaryImage(temp);
@@ -114,15 +114,7 @@ public class FillStarTest {
 		return rgba;
 	}
 	
-	public static BufferedImage specialFlood(BufferedImage bi, int colwidth, int Xh, int Yv){
-		/*for(int i = 0 ; i < pixels.length && i < pixels[0].length; i++){
-			pixels[i][i] = -2000;	
-		}*/
-		/*byte[] pixels = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-		Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
-		mat.put(0, 0, pixels);
-		
-		return OpenCVUtil.matToBufferedImage(mat, BufferedImage.TYPE_3BYTE_BGR);*/
+	public static BufferedImage specialFlood(BufferedImage bi, int Xh, int Yv){
 		int[][] pixels = convertTo2DUsingGetRGB(bi);
 		
 		int t = pixels.length - Yv;
@@ -148,7 +140,7 @@ public class FillStarTest {
 				int px = pixels[(int) Math.round(Cy)][Cx];
 				
 				//UPDATE STATE
-				if(state == 0 && px > 200){			//On BG, see skin
+				if(state == 0 && px > 200 && Cy != 0){			//On BG, see skin
 					state = 1;
 				}else if(state == 1 && px < 200){	//On skin, see bone
 					state = 2;
