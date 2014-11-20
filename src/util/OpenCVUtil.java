@@ -20,7 +20,7 @@ public class OpenCVUtil {
 	}
 
 	// From http://enfanote.blogspot.com/2013/06/converting-java-bufferedimage-to-opencv.html
-	public static BufferedImage matToBufferedImage(Mat myMat){
+	public static BufferedImage matToBufferedImage(Mat myMat, int type){
 		Mat mat = myMat;
 		byte[] data = new byte[mat.rows()*mat.cols()*(int)(mat.elemSize())];
 		mat.get(0, 0, data);
@@ -31,7 +31,7 @@ public class OpenCVUtil {
 		  data[i + 2] = temp;
 		 }
 		}
-		BufferedImage image = new BufferedImage(mat.cols(), mat.rows(), BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage image = new BufferedImage(mat.cols(), mat.rows(), type);
 		image.getRaster().setDataElements(0, 0, mat.cols(), mat.rows(), data);
 		return image;
 	}
@@ -40,6 +40,6 @@ public class OpenCVUtil {
 		Mat mat = bufferedImageToMat(img);
 		org.opencv.imgproc.Imgproc.line(mat, new org.opencv.core.Point(start.getX(),  start.getY()),
 				 new org.opencv.core.Point(end.getX(),  end.getY()), new Scalar(127, 127, 127), 5);
-		return matToBufferedImage(mat);
+		return matToBufferedImage(mat, BufferedImage.TYPE_BYTE_GRAY);
 	}
 }

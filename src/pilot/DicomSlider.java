@@ -71,6 +71,10 @@ public class DicomSlider {
 		
 		panel.add(progressPanel, "cell 1 0");
 		
+		JButton tryFlood = new JButton("Try flood...oh god...");
+		tryFlood.addActionListener(new TryFlood());
+		panel.add(tryFlood, "wrap");
+		
 		openButton.addActionListener(new OpenDirectoryListener(panel));
 		//flipButton.addActionListener(new FlipSlicesListener());
 		slider.addChangeListener(new ImageSlideListener());
@@ -243,9 +247,12 @@ public class DicomSlider {
 		loadWorker.execute();
 	}
 	
-	public void thresholdImages(int threshold){
+	public void thresholdImages(int threshold, boolean openclose){
 		for(int i = 0; i < dicomFiles.length; i++){
 			dicomFiles[i] = ImageProcessing.threshold(toBufferedImage(dicomFiles[i]), threshold);
+			if(openclose){
+				dicomFiles[i] = ImageProcessing.openThenClose(toBufferedImage(dicomFiles[i]));
+			}
 			imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 		}
 		System.out.println("Done thresholding.");
@@ -254,6 +261,18 @@ public class DicomSlider {
 	private void resetProgress(){
 		this.progress.setValue(0);
 		this.progressLabel.setText("");
+	}
+	
+	public class TryFlood implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			for(int i = 0; i < dicomFiles.length; i++){
+				dicomFiles[i] = SpecialFill.noteBoundaries(toBufferedImage(dicomFiles[i]), 50, 75, 300, 300);
+				imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
+			}
+			System.out.println("Done flooding.");
+		}
 	}
 	
 	/**

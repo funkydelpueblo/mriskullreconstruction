@@ -85,7 +85,7 @@ public class ImageProcessing {
 	}
 	
 	//From StackOverflow: #8422374
-	private static int[][] transposeOutOfPlace(int[][] array){
+	public static int[][] transposeOutOfPlace(int[][] array){
 		  int width = array.length;
 		  int height = array[0].length;
 
@@ -173,7 +173,7 @@ public class ImageProcessing {
 		Mat imageMat = OpenCVUtil.bufferedImageToMat(input);
 		Mat result = new Mat(imageMat.rows(), imageMat.cols(), imageMat.type());
 		org.opencv.imgproc.Imgproc.threshold(imageMat, result, th, 255, Imgproc.THRESH_BINARY);
-		return OpenCVUtil.matToBufferedImage(result);
+		return OpenCVUtil.matToBufferedImage(result, BufferedImage.TYPE_BYTE_GRAY);
 	}
 	
 	final static int elem_size = 1;
@@ -190,6 +190,6 @@ public class ImageProcessing {
         Imgproc.dilate(A, B, element);
         Imgproc.erode(B, A, element);
         
-        return OpenCVUtil.matToBufferedImage(A);
+        return OpenCVUtil.matToBufferedImage(A, BufferedImage.TYPE_BYTE_GRAY);
 	}
 }
