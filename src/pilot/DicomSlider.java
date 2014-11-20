@@ -207,7 +207,7 @@ public class DicomSlider {
 			//if (!source.getValueIsAdjusting()) {
 		        int slice = (int)source.getValue();
 		        BufferedImage bi = toBufferedImage(dicomFiles[slice]);
-		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(bi, new java.awt.Point(X_LINE, 0), new java.awt.Point(bi.getWidth(), bi.getHeight() - Y_LINE))));
+		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(bi, new java.awt.Point(0, X_LINE), new java.awt.Point(bi.getWidth(), bi.getHeight() - Y_LINE))));
 		    //}
 		}
 		
@@ -264,7 +264,7 @@ public class DicomSlider {
 		this.progressLabel.setText("");
 	}
 	
-	final int X_LINE = 100;
+	final int X_LINE = 20;
 	final int Y_LINE = 100;
 	
 	public class TryFlood implements ActionListener{

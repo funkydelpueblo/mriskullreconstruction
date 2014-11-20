@@ -140,7 +140,7 @@ public class FillStarTest {
 				int px = pixels[(int) Math.round(Cy)][Cx];
 				
 				//UPDATE STATE
-				if(state == 0 && px > 200 && Cy != 0){			//On BG, see skin
+				if(state == 0 && px > 200 && Cy != 0 && Cy != 1){			//On BG, see skin
 					state = 1;
 				}else if(state == 1 && px < 200){	//On skin, see bone
 					state = 2;
