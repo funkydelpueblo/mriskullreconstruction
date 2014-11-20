@@ -165,7 +165,7 @@ public class ImageProcessing {
 	               row = 0;
 	               col++;
 	            }
-	         }
+	        }
 	      return result;
 	   }
 	

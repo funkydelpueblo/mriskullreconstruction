@@ -39,7 +39,7 @@ public class OpenCVUtil {
 	public static BufferedImage addLine(BufferedImage img, Point start, Point end){
 		Mat mat = bufferedImageToMat(img);
 		org.opencv.imgproc.Imgproc.line(mat, new org.opencv.core.Point(start.getX(),  start.getY()),
-				 new org.opencv.core.Point(end.getX(),  end.getY()), new Scalar(255, 255, 255), 5);
+				 new org.opencv.core.Point(end.getX(),  end.getY()), new Scalar(127, 127, 127), 5);
 		return matToBufferedImage(mat);
 	}
 }
