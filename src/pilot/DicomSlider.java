@@ -264,15 +264,15 @@ public class DicomSlider {
 		this.progressLabel.setText("");
 	}
 	
-	final int X_LINE = 20;
-	final int Y_LINE = 100;
+	final int X_LINE = 100;
+	final int Y_LINE = 200;
 	
 	public class TryFlood implements ActionListener{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			for(int i = 0; i < dicomFiles.length; i++){
-				dicomFiles[i] = FillStarTest.specialFlood(toBufferedImage(dicomFiles[i]), X_LINE, Y_LINE);
+				dicomFiles[i] = FillStarTest.specialFloodB(toBufferedImage(dicomFiles[i]), X_LINE, Y_LINE);
 				imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 			}
 			System.out.println("Done flooding.");

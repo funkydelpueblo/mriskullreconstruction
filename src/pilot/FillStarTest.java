@@ -36,7 +36,7 @@ public class FillStarTest {
 		    image = ImageIO.read(new File("./src/head2.jpg"));
 		    //clean
 		    int[][] pixels = convertTo2DUsingGetRGB(image);
-		    image = specialFlood(image, 1, 50);
+		    image = specialFloodB(image, 50, 100);
 		    //image = ImageProcessing.getImage(pixels);
 		    //byte[][] temp = ImageProcessing.byteArrayFromImage(image);
 		    //image = ImageProcessing.getBinaryImage(temp);
@@ -117,8 +117,7 @@ public class FillStarTest {
 	public static BufferedImage specialFlood(BufferedImage bi, int Xh, int Yv){
 		int[][] pixels = convertTo2DUsingGetRGB(bi);
 		
-		int t = pixels.length - Yv;
-		int u = pixels[0].length - Xh;
+		
 		double m = ((pixels.length - Yv) + 1 ) / (pixels[0].length - Xh - 0.0);
 		
 		int state = 0; 	//0: black (background)
@@ -140,7 +139,7 @@ public class FillStarTest {
 				int px = pixels[(int) Math.round(Cy)][Cx];
 				
 				//UPDATE STATE
-				if(state == 0 && px > 200 && Cy != 0 && Cy != 1){			//On BG, see skin
+				if(state == 0 && px > 200){			//On BG, see skin
 					state = 1;
 				}else if(state == 1 && px < 200){	//On skin, see bone
 					state = 2;
@@ -176,6 +175,80 @@ public class FillStarTest {
 			Cx = start;
 			state = 0;
 			Cy = 0.0;
+		}
+		
+		return ImageProcessing.getImage(fixBadRotation(pixels));
+	}
+	
+	public static BufferedImage specialFloodB(BufferedImage bi, int YL, int YR){
+		int[][] pixels = convertTo2DUsingGetRGB(bi);
+		
+		
+		double m = (YR - YL) / (pixels[0].length - 0.0);
+		double b = YL;
+		int imaginaryStart = (int) ((b * -1) / m);	// y = mx + b for y = 0
+		int realStart = (int)Math.round(m * (pixels[0].length) + b); //y = mx + b for x = width
+		
+		int state = 0; 	//0: black (background)
+						//1: white (skin)
+						//2*: black (bone)
+						//3: white (brain)
+						//4: black (bone)
+						//5: white (skin)
+						//6: black (background)
+		
+		int Cx = pixels[0].length;
+		double Cy = 0.0;
+		int K = 0;
+		
+		while(realStart > 0){
+			Cy = realStart;
+			Cx = pixels[0].length - 1;
+			
+			java.util.ArrayList<Point> fillTwo = new ArrayList<Point>();
+			java.util.ArrayList<Point> fillFour = new ArrayList<Point>();
+			
+			state = 0;
+			while(Cy >= 0 && Cx >= 0){
+				int px = pixels[(int) Math.round(Cy)][Cx];
+				
+				//UPDATE STATE
+				if(state == 0 && px > 200){			//On BG, see skin
+					state = 1;
+				}else if(state == 1 && px < 200){	//On skin, see bone
+					state = 2;
+				}else if(state == 2 && px > 200){	//On bone, see brain
+					state = 3;
+				}else if(state == 3 && px < 200){	//On brain, see bone
+					state = 4;
+				}else if(state == 4 && px > 200){	//On bone, see skin
+					state = 5;
+				}else if(state == 5 && px < 200){	//On skin, see BG
+					state = 6;
+				}
+				
+				if(state == 2){
+					fillTwo.add(new Point(Cx, (int) Math.round(Cy)));
+				}else if(state == 4){
+					fillFour.add(new Point(Cx, (int) Math.round(Cy)));
+				}
+				Cx --;
+				Cy -= m;
+			}
+			
+			if(state == 6 || state == 4){
+				if(state == 6){
+					fillTwo.addAll(fillFour);
+				}
+				for(Point p : fillTwo){
+					pixels[p.y][p.x] = -20000;
+				}
+			}
+			//
+
+			K++;
+			realStart = (int)Math.round(m * (pixels[0].length) + b) - K; //y = mx + b for x = width
+			System.out.print(realStart);
 		}
 		
 		return ImageProcessing.getImage(fixBadRotation(pixels));
