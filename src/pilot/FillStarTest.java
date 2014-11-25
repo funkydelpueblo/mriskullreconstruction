@@ -36,7 +36,7 @@ public class FillStarTest {
 		    image = ImageIO.read(new File("./src/head2.jpg"));
 		    //clean
 		    int[][] pixels = convertTo2DUsingGetRGB(image);
-		    image = specialFloodB(image, 50, 100, 0);
+		    image = specialFloodC(image, 50, 100, 0);
 		    //image = ImageProcessing.getImage(pixels);
 		    //byte[][] temp = ImageProcessing.byteArrayFromImage(image);
 		    //image = ImageProcessing.getBinaryImage(temp);
@@ -249,6 +249,69 @@ public class FillStarTest {
 			K++;
 			realStart = (int)Math.round(m * (pixels[0].length) + b) - K; //y = mx + b for x = width
 			System.out.print(realStart);
+		}
+		
+		return ImageProcessing.getImage(fixBadRotation(pixels));
+	}
+	
+	public static BufferedImage specialFloodC(BufferedImage bi, int YL, int YR, int noiseEnd){
+		int[][] pixels = convertTo2DUsingGetRGB(bi);
+		
+		
+		double m = (YR - YL) / (pixels[0].length - 0.0);
+		double b = YL;
+		
+		int yStart = (int)Math.ceil(m * (pixels[0].length) + b);
+		
+		int state = 0; 	//0: black (background)
+						//1: white before black (skin)
+						//2*: black after white (bone)
+						//3: white after black(brain)
+						//X4: black (bone)
+						//X5: white (skin)
+						//X6: black (background)
+		
+		int Cx = pixels[0].length - 1;
+		double Cy = yStart;
+		
+		while(yStart > 0){
+			Cy = yStart;
+			Cx = pixels[0].length - 1;
+			
+			java.util.ArrayList<Point> fillAll = new ArrayList<Point>();
+			java.util.ArrayList<Point> fillTemp = new ArrayList<Point>();
+			
+			//y = mx + b --> y - b = mx --> (y - b) / m = x
+			
+			state = 0;
+			while(Cy >= noiseEnd && Cx >= 0 && Cx > ((yStart - b) / m)){
+				int px = pixels[(int) Math.round(Cy)][Cx];
+				
+				//UPDATE STATE
+				if(state == 0 && px > 200){			//Black, haven't seen any white, now we see white
+					state = 1;
+				}else if(state == 1 && px < 200){	//On white, after first black, now we see more black
+					state = 2;
+				}else if(state == 2 && px > 200){	//On black, after white, now we see next white
+					state = 3;
+					fillAll.addAll(fillTemp);
+					fillTemp.clear();
+				}else if(state == 3 && px < 200){	//On white, after non-first black, we see another black
+					state = 2;
+				}
+				
+				if(state == 2){
+					fillTemp.add(new Point(Cx, (int) Math.round(Cy)));
+				}
+				
+				Cx --;
+			}
+			
+			for(Point p : fillAll){
+				pixels[p.y][p.x] = -20000;
+			}
+			yStart--;
+			System.out.print(yStart);
 		}
 		
 		return ImageProcessing.getImage(fixBadRotation(pixels));

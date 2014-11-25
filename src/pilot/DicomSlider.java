@@ -273,7 +273,7 @@ public class DicomSlider {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			for(int i = 0; i < dicomFiles.length; i++){
-				dicomFiles[i] = FillStarTest.specialFloodB(toBufferedImage(dicomFiles[i]), X_LINE, Y_LINE, NOISE_END);
+				dicomFiles[i] = FillStarTest.specialFloodC(toBufferedImage(dicomFiles[i]), X_LINE, Y_LINE, NOISE_END);
 				imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 			}
 			System.out.println("Done flooding.");
