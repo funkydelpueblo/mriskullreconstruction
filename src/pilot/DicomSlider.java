@@ -266,13 +266,14 @@ public class DicomSlider {
 	
 	final int X_LINE = 100;
 	final int Y_LINE = 200;
+	final int NOISE_END = 10;
 	
 	public class TryFlood implements ActionListener{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			for(int i = 0; i < dicomFiles.length; i++){
-				dicomFiles[i] = FillStarTest.specialFloodB(toBufferedImage(dicomFiles[i]), X_LINE, Y_LINE);
+				dicomFiles[i] = FillStarTest.specialFloodB(toBufferedImage(dicomFiles[i]), X_LINE, Y_LINE, NOISE_END);
 				imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 			}
 			System.out.println("Done flooding.");

@@ -36,7 +36,7 @@ public class FillStarTest {
 		    image = ImageIO.read(new File("./src/head2.jpg"));
 		    //clean
 		    int[][] pixels = convertTo2DUsingGetRGB(image);
-		    image = specialFloodB(image, 50, 100);
+		    image = specialFloodB(image, 50, 100, 0);
 		    //image = ImageProcessing.getImage(pixels);
 		    //byte[][] temp = ImageProcessing.byteArrayFromImage(image);
 		    //image = ImageProcessing.getBinaryImage(temp);
@@ -180,7 +180,7 @@ public class FillStarTest {
 		return ImageProcessing.getImage(fixBadRotation(pixels));
 	}
 	
-	public static BufferedImage specialFloodB(BufferedImage bi, int YL, int YR){
+	public static BufferedImage specialFloodB(BufferedImage bi, int YL, int YR, int noiseEnd){
 		int[][] pixels = convertTo2DUsingGetRGB(bi);
 		
 		
@@ -190,12 +190,12 @@ public class FillStarTest {
 		int realStart = (int)Math.round(m * (pixels[0].length) + b); //y = mx + b for x = width
 		
 		int state = 0; 	//0: black (background)
-						//1: white (skin)
-						//2*: black (bone)
-						//3: white (brain)
-						//4: black (bone)
-						//5: white (skin)
-						//6: black (background)
+						//1: white before black (skin)
+						//2*: black after white (bone)
+						//3: white after black(brain)
+						//X4: black (bone)
+						//X5: white (skin)
+						//X6: black (background)
 		
 		int Cx = pixels[0].length;
 		double Cy = 0.0;
@@ -205,44 +205,44 @@ public class FillStarTest {
 			Cy = realStart;
 			Cx = pixels[0].length - 1;
 			
-			java.util.ArrayList<Point> fillTwo = new ArrayList<Point>();
-			java.util.ArrayList<Point> fillFour = new ArrayList<Point>();
+			java.util.ArrayList<Point> fillAll = new ArrayList<Point>();
+			java.util.ArrayList<Point> fillTemp = new ArrayList<Point>();
 			
 			state = 0;
-			while(Cy >= 0 && Cx >= 0){
+			while(Cy >= noiseEnd && Cx >= 0){
 				int px = pixels[(int) Math.round(Cy)][Cx];
 				
 				//UPDATE STATE
-				if(state == 0 && px > 200){			//On BG, see skin
+				if(state == 0 && px > 200){			//Black, haven't seen any white, now we see white
 					state = 1;
-				}else if(state == 1 && px < 200){	//On skin, see bone
+				}else if(state == 1 && px < 200){	//On white, after first black, now we see more black
 					state = 2;
-				}else if(state == 2 && px > 200){	//On bone, see brain
+				}else if(state == 2 && px > 200){	//On black, after white, now we see next white
 					state = 3;
-				}else if(state == 3 && px < 200){	//On brain, see bone
-					state = 4;
-				}else if(state == 4 && px > 200){	//On bone, see skin
-					state = 5;
-				}else if(state == 5 && px < 200){	//On skin, see BG
-					state = 6;
+					fillAll.addAll(fillTemp);
+					fillTemp.clear();
+				}else if(state == 3 && px < 200){	//On white, after non-first black, we see another black
+					state = 2;
 				}
 				
 				if(state == 2){
-					fillTwo.add(new Point(Cx, (int) Math.round(Cy)));
-				}else if(state == 4){
-					fillFour.add(new Point(Cx, (int) Math.round(Cy)));
+					fillTemp.add(new Point(Cx, (int) Math.round(Cy)));
 				}
+				
 				Cx --;
 				Cy -= m;
 			}
 			
-			if(state == 6 || state == 4){
+			/*if(state == 6 || state == 4){
 				if(state == 6){
 					fillTwo.addAll(fillFour);
 				}
 				for(Point p : fillTwo){
 					pixels[p.y][p.x] = -20000;
 				}
+			}*/
+			for(Point p : fillAll){
+				pixels[p.y][p.x] = -20000;
 			}
 			//
 
