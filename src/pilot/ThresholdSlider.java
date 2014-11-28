@@ -116,7 +116,6 @@ public class ThresholdSlider {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			ImportantValues.threshold = slider.getValue();
 			parent.thresholdImages(slider.getValue(), openclose.isSelected());
 			frame.setVisible(false);
 			frame.dispose();
