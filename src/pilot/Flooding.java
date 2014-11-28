@@ -34,10 +34,27 @@ public class Flooding {
 	public BufferedImage floodToImage(BufferedImage bi, int index, int YL, int YR, int noiseEnd){
 		java.util.ArrayList<Point> flood = flood(bi, YL, YR, noiseEnd);
 		int[][] pixels = convertTo2DUsingGetRGB(bi);
+		
+		//a) Prep image to return
 		for(Point p : flood){
-			points.add(new Point3d(p.getX(), p.getY(), (double)index)); //start building index of points
 			pixels[p.y][p.x] = -20000;
 		}
+		
+		// b) Take out pixels on inside of skull, so only shell (removing need for drawing unseen pixels)
+		// 	1. Create map of flooded parts
+		byte[][] floodLocs = new byte[pixels.length][pixels[0].length];
+		for(Point p : flood){
+			floodLocs[p.y][p.x] = 1;
+		}
+		//	2. Only save pixels that are not surrounded on all sides by other pixels
+		for(Point p : flood){
+			int x = p.x; int y = p.y;
+			if((x - 1 >= 0 && floodLocs[y][x - 1] == 0) || (x + 1 < floodLocs[y].length && floodLocs[y][x+1] == 0)
+					|| (y - 1 >= 0 && floodLocs[y -1][x] == 0) || (y + 1 < floodLocs.length && floodLocs[y+1][x] == 0)){
+				points.add(new Point3d(p.getX(), p.getY(), (double)index)); //start building index of points
+			}
+		}
+		
 		return ImageProcessing.getImage(fixBadRotation(pixels));
 	}
 	

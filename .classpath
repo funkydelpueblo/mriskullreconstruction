@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="/System/Library/Java/Extensions/jai_core.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/OpenCV-3.0.0"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Java3D1.6.0"/>
+	<classpathentry kind="lib" path="/Users/aaron/Documents/Code/Libraries/DT1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
