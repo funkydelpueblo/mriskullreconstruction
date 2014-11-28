@@ -2,6 +2,7 @@ package pilot;
 
 import java.awt.BorderLayout;
 import java.awt.GraphicsConfiguration;
+import java.util.ArrayList;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
@@ -84,7 +85,7 @@ public class SkullBuilder {
 
 	    int c = 0;
 	    for(Point3d p : points){
-	    	plaPts[c] = p;
+	    	plaPts[c] = new Point3d(p.x / 10, p.y / 10, p.z / 10);
 	    	c++;
 	    }
         
@@ -120,5 +121,14 @@ public class SkullBuilder {
         group.addChild(msl);
         
         return group;
+	}
+	
+	public static void main(String[] args){
+		java.util.ArrayList<Point3d> test = new ArrayList<Point3d>();
+		test.add(new Point3d(353.0, 148.0, 35.0));
+		test.add(new Point3d(352.0, 148.0, 35.0));
+		test.add(new Point3d(351.0, 148.0, 35.0));
+		constructSkullShowWindow(test);
+		//(353.0, 148.0, 35.0), (352.0, 148.0, 35.0), (351.0, 148.0, 35.0)
 	}
 }

@@ -32,6 +32,7 @@ public class DicomSlider {
 	JFileChooser fileChooser;
 	JButton openButton;
 	JButton flipButton;
+	JButton buildButton;
 	JLabel imageLabel;
 	JSlider slider;
 	
@@ -72,9 +73,13 @@ public class DicomSlider {
 		
 		panel.add(progressPanel, "cell 1 0");
 		
-		JButton tryFlood = new JButton("Try flood...oh god...");
+		JButton tryFlood = new JButton("Flood above line");
 		tryFlood.addActionListener(new TryFlood());
 		panel.add(tryFlood, "wrap");
+		
+		buildButton = new JButton("Reconstruct skull (test)");
+		buildButton.addActionListener(new TryConstruct());
+		panel.add(buildButton, "wrap");
 		
 		openButton.addActionListener(new OpenDirectoryListener(panel));
 		//flipButton.addActionListener(new FlipSlicesListener());
