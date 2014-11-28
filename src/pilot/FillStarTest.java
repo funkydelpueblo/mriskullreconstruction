@@ -36,7 +36,7 @@ public class FillStarTest {
 		    image = ImageIO.read(new File("./src/head2.jpg"));
 		    //clean
 		    int[][] pixels = convertTo2DUsingGetRGB(image);
-		    image = specialFloodC(image, 50, 100, 0);
+		    image = floodToImage(image, 50, 100, 0);
 		    //image = ImageProcessing.getImage(pixels);
 		    //byte[][] temp = ImageProcessing.byteArrayFromImage(image);
 		    //image = ImageProcessing.getBinaryImage(temp);
@@ -254,9 +254,9 @@ public class FillStarTest {
 		return ImageProcessing.getImage(fixBadRotation(pixels));
 	}
 	
-	public static BufferedImage specialFloodC(BufferedImage bi, int YL, int YR, int noiseEnd){
+	public static java.util.ArrayList<Point> specialFloodC(BufferedImage bi, int YL, int YR, int noiseEnd){
 		int[][] pixels = convertTo2DUsingGetRGB(bi);
-		
+		java.util.ArrayList<Point> result = new ArrayList<>();
 		
 		double m = (YR - YL) / (pixels[0].length - 0.0);
 		double b = YL;
@@ -308,12 +308,22 @@ public class FillStarTest {
 			}
 			
 			for(Point p : fillAll){
-				pixels[p.y][p.x] = -20000;
+				//pixels[p.y][p.x] = -20000;
+				result.add(p);
 			}
 			yStart--;
 			System.out.print(yStart);
 		}
 		
+		return result;
+	}
+	
+	public static BufferedImage floodToImage(BufferedImage bi, int YL, int YR, int noiseEnd){
+		java.util.ArrayList<Point> flood = specialFloodC(bi, YL, YR, noiseEnd);
+		int[][] pixels = convertTo2DUsingGetRGB(bi);
+		for(Point p : flood){
+			pixels[p.y][p.x] = -20000;
+		}
 		return ImageProcessing.getImage(fixBadRotation(pixels));
 	}
 	

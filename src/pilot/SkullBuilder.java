@@ -28,36 +28,19 @@ import net.miginfocom.swing.MigLayout;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
 import com.sun.j3d.utils.behaviors.mouse.MouseZoom;
-import com.sun.j3d.utils.geometry.ColorCube;
-import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
-public class Java3DTest {
-
-	public static void helloWorld(){
-		SimpleUniverse su = new SimpleUniverse();
-		BranchGroup branch = new BranchGroup();
-		Sphere sphere = new Sphere(0.5f);
-		branch.addChild(sphere);
-		
-		Color3f light1Color = new Color3f(java.awt.Color.WHITE);
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
-		Vector3f light1Direction = new Vector3f(4.0f, -7.0f, -12.0f);
-		DirectionalLight light1 = new DirectionalLight(light1Color, light1Direction);
-		light1.setInfluencingBounds(bounds);
-		
-		AmbientLight light2 = new AmbientLight(new Color3f(java.awt.Color.CYAN));
-		light2.setInfluencingBounds(bounds);
-		
-		branch.addChild(light1);
-		branch.addChild(light2);
-		
-		su.getViewingPlatform().setNominalViewingTransform();
-		su.addBranchGraph(branch);
+public class SkullBuilder {
+	public static void constructSkullShowWindow(java.util.ArrayList<Point3d> points){
+		JFrame frame = new JFrame();
+        frame.add(new JScrollPane(buildPanel(points)));
+        frame.setSize(600, 600);
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	//Based on StackOverflow #12313917
-	public static JPanel buildPanel(Point3f[] points, int length){
+	public static JPanel buildPanel(java.util.ArrayList<Point3d> points){
 		JPanel panel = new JPanel();
 		MigLayout layout = new MigLayout();
 		panel.setLayout(new BorderLayout());
@@ -66,50 +49,7 @@ public class Java3DTest {
 		panel.add("Center", canvas);
 		
 		//Setup Branch group
-		BranchGroup group = new BranchGroup();
-		Appearance app = new Appearance();
-	    ColoringAttributes ca = new ColoringAttributes(new Color3f(180.0f, 204.0f,180.0f), ColoringAttributes.SHADE_GOURAUD);
-	    app.setColoringAttributes(ca);
-		
-	    //Add points to array
-	    Point3f[] plaPts = new Point3f[length];
-
-	    int c = 0;
-	    for(Point3f p : points){
-	    	plaPts[c] = p;
-	    	c++;
-	    }
-        
-        PointArray pla = new PointArray(length, GeometryArray.COORDINATES);
-        pla.setCoordinates(0, plaPts);
-        
-        //Increase point size
-        PointAttributes pointAtt=new PointAttributes();
-        pointAtt.setPointSize(10.0f);
-        pointAtt.setPointAntialiasingEnable(true);
-        
-        app.setPointAttributes(pointAtt);
-        
-        //Turn points into geometry object
-        Shape3D plShape = new Shape3D(pla, app);
-        TransformGroup objRotate = new TransformGroup();
-        objRotate.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        objRotate.addChild(plShape);
-        group.addChild(objRotate);
-	    
-        //Mouse interactions
-        MouseRotate mr=new MouseRotate();
-        mr.setTransformGroup(objRotate);
-        mr.setSchedulingBounds(new BoundingSphere());
-        group.addChild(mr);
-        MouseZoom mz=new MouseZoom();
-        mz.setTransformGroup(objRotate);
-        mz.setSchedulingBounds(new BoundingSphere());
-        group.addChild(mz);
-        MouseTranslate msl=new MouseTranslate();
-        msl.setTransformGroup(objRotate);
-        msl.setSchedulingBounds(new BoundingSphere());
-        group.addChild(msl);
+		BranchGroup group = pointsToBranchGroup(points);
         
         //Lighting
         Color3f light1Color = new Color3f(java.awt.Color.WHITE);
@@ -132,15 +72,53 @@ public class Java3DTest {
 		return panel;
 	}
 	
-	public static void main(String[] args){
-		Point3f[] points = {new Point3f(0.0f, 0.0f, 0.0f), new Point3f(0.1f, 0.1f, 0.1f)};
+	private static BranchGroup pointsToBranchGroup(java.util.ArrayList<Point3d> points){
+		//Setup Branch group
+		BranchGroup group = new BranchGroup();
+		Appearance app = new Appearance();
+	    ColoringAttributes ca = new ColoringAttributes(new Color3f(180.0f, 204.0f,180.0f), ColoringAttributes.SHADE_GOURAUD);
+	    app.setColoringAttributes(ca);
 		
-		JFrame frame = new JFrame();
-        frame.add(new JScrollPane(buildPanel(points, 2)));
-        frame.setSize(300, 300);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//helloWorld();
+	    //Add points to array
+	    Point3d[] plaPts = new Point3d[points.size()];
+
+	    int c = 0;
+	    for(Point3d p : points){
+	    	plaPts[c] = p;
+	    	c++;
+	    }
+        
+        PointArray pla = new PointArray(points.size(), GeometryArray.COORDINATES);
+        pla.setCoordinates(0, plaPts);
+        
+        //Increase point size
+        PointAttributes pointAtt=new PointAttributes();
+        pointAtt.setPointSize(10.0f);
+        pointAtt.setPointAntialiasingEnable(true);
+        
+        app.setPointAttributes(pointAtt);
+        
+        //Turn points into geometry object
+        Shape3D plShape = new Shape3D(pla, app);
+        TransformGroup objRotate = new TransformGroup();
+        objRotate.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        objRotate.addChild(plShape);
+        group.addChild(objRotate);
+        
+       //Mouse interactions
+        MouseRotate mr=new MouseRotate();
+        mr.setTransformGroup(objRotate);
+        mr.setSchedulingBounds(new BoundingSphere());
+        group.addChild(mr);
+        MouseZoom mz=new MouseZoom();
+        mz.setTransformGroup(objRotate);
+        mz.setSchedulingBounds(new BoundingSphere());
+        group.addChild(mz);
+        MouseTranslate msl=new MouseTranslate();
+        msl.setTransformGroup(objRotate);
+        msl.setSchedulingBounds(new BoundingSphere());
+        group.addChild(msl);
+        
+        return group;
 	}
-	
 }
