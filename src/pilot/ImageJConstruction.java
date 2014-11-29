@@ -15,12 +15,6 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 public class ImageJConstruction implements PlugIn{
-
-	//private BufferedImage[] images; 
-	
-	public ImageJConstruction(){
-		
-	}
 	
 	public void openAndConstruct(){
 		new ij.ImageJ();
@@ -31,7 +25,7 @@ public class ImageJConstruction implements PlugIn{
 	
 	@Override
 	public void run(String arg0) {
-		System.out.println("Run ImageJ constructor as plugin");
+		/*System.out.println("Run ImageJ constructor as plugin");
 		BufferedImage[] images = FoolishSingleton.getImages();
 		
 		ImageStack stack = new ImageStack((int)(images[0].getWidth() * RESIZE), (int)(images[0].getHeight() * RESIZE));
@@ -54,7 +48,18 @@ public class ImageJConstruction implements PlugIn{
 	    //System.out.println(imp.getBufferedImage());
 
 	    // Add the image as a volume rendering
-	    univ.addVoltex(imp);
+	    univ.addVoltex(imp);*/
+		
+		String path = "/Users/aaron/Desktop/test.tif";
+	    ImagePlus imp = IJ.openImage(path);
+	    new StackConverter(imp).convertToGray8();
+
+	    // Create a universe and show it
+	    Image3DUniverse univ = new Image3DUniverse();
+	    univ.show();
+
+	    // Add the image as a volume rendering
+	    Content c = univ.addVoltex(imp);
 	}
 	
 	public static BufferedImage resize(BufferedImage img, double pct) { 

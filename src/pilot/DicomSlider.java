@@ -31,6 +31,7 @@ import javax.vecmath.Point3d;
 
 import org.opencv.core.Core;
 
+import testdev.IJViewerTest;
 import util.ImageProcessing;
 import util.OpenCVUtil;
 import external.DicomHeaderReader;
@@ -308,7 +309,7 @@ public class DicomSlider {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			flooding = new Flooding();
+			flooding = new Flooding(dicomFiles.length);
 			for(int i = 0; i < dicomFiles.length; i++){
 				dicomFiles[i] = flooding.floodToImage(toBufferedImage(dicomFiles[i]), i, X_LINE, Y_LINE, NOISE_END);
 				imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
@@ -330,49 +331,27 @@ public class DicomSlider {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			BufferedImage[] bis = new BufferedImage[10];
+			/*BufferedImage[] bis = new BufferedImage[10];
 			for(int i = 75; i < 85; i++){
 				bis[i-75] = toBufferedImage(dicomFiles[i]);
 			}
 			FoolishSingleton.setImages(bis);
 			ImageJConstruction ijc = new ImageJConstruction();
-			ijc.openAndConstruct();
+			ijc.openAndConstruct();*/
+			IJViewerTest.main(null);
 		}
 	}
 	
 	public class TryTiff implements ActionListener{
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			String[] str = ImageIO.getWriterFormatNames();
-			Iterator<javax.imageio.ImageWriter> writers = ImageIO.getImageWritersByFormatName("GIF");
-			javax.imageio.ImageWriter writer = (javax.imageio.ImageWriter)writers.next();
-
-			File f = new File("/Users/aaron/Desktop/test.GIF");
-			ImageOutputStream ios;
-			try {
-				ios = ImageIO.createImageOutputStream(f);
-				writer.setOutput(ios);
-				IIOImage first_IIOImage = new IIOImage(ImageJConstruction.resize(toBufferedImage(dicomFiles[75]), .10), null, null);
-				writer.write(null, first_IIOImage, null);
-				
-				int c = 76;
-				while(writer.canInsertImage(c-75) && c < 85){
-					System.out.print(c + "...");
-					IIOImage tempIIO = new IIOImage(ImageJConstruction.resize(toBufferedImage(dicomFiles[c]), .10), null, null);
-					writer.writeInsert(1, tempIIO, null);
-					c++;
-				}
-			
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			
+		public void actionPerformed(ActionEvent e) {	
 			File tiffF = new File("/Users/aaron/Desktop/test.tif");
 	        BufferedOutputStream out;
+	        BufferedImage[] floodSlices = flooding.getFloodSlices();
 			try {
 				out = new BufferedOutputStream(new FileOutputStream(tiffF));
-				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(dicomFiles[75]), .10);
+				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(dicomFiles[0]), .10);
 				BufferedImage convertedImg = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 			    convertedImg.getGraphics().drawImage(bi, 0, 0, null);
 				bi = convertedImg;
@@ -383,7 +362,7 @@ public class DicomSlider {
 		        Vector<BufferedImage> extra = new Vector<BufferedImage>();
 		        BufferedImage temp;
 		        BufferedImage start;
-		        for(int i = 76; i < 85; i++){
+		        for(int i = 2; i < dicomFiles.length; i+=2){
 		        	start = ImageJConstruction.resize(toBufferedImage(dicomFiles[i]), .10);
 					temp = new BufferedImage(start.getWidth(), start.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 				    temp.getGraphics().drawImage(start, 0, 0, null);

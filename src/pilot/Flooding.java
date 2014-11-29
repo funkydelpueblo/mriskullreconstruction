@@ -13,13 +13,19 @@ import util.ImageProcessing;
 public class Flooding {
 	
 	private java.util.ArrayList<Point3d> points;
+	private BufferedImage[] floodSlices;
 	
-	public Flooding(){
+	public Flooding(int stack){
 		points = new java.util.ArrayList<Point3d>();
+		floodSlices = new BufferedImage[stack];
 	}
 	
 	public java.util.ArrayList<Point3d> getPoints(){
 		return this.points;
+	}
+	
+	public BufferedImage[] getFloodSlices(){
+		return this.floodSlices;
 	}
 	
 	/**
@@ -42,9 +48,9 @@ public class Flooding {
 		
 		// b) Take out pixels on inside of skull, so only shell (removing need for drawing unseen pixels)
 		// 	1. Create map of flooded parts
-		byte[][] floodLocs = new byte[pixels.length][pixels[0].length];
+		int[][] floodLocs = new int[pixels.length][pixels[0].length];
 		for(Point p : flood){
-			floodLocs[p.y][p.x] = 1;
+			floodLocs[p.y][p.x] = -20000;
 		}
 		//	2. Only save pixels that are not surrounded on all sides by other pixels
 		for(Point p : flood){
@@ -55,6 +61,7 @@ public class Flooding {
 			}
 		}
 		
+		floodSlices[index] = ImageProcessing.getImage(fixBadRotation(floodLocs));
 		return ImageProcessing.getImage(fixBadRotation(pixels));
 	}
 	

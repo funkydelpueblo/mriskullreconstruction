@@ -17,7 +17,8 @@ public class IJViewerTest implements PlugIn{
 	public void run(String arg) {
 		System.out.println("RUN...");
 	    // Open an image
-	    String path = "/Users/aaron/Downloads/t1-head.tif";
+	    //String path = "/Users/aaron/Downloads/t1-head.tif";
+		String path = "/Users/aaron/Desktop/test.tif";
 	    ImagePlus imp = IJ.openImage(path);
 	    new StackConverter(imp).convertToGray8();
 
@@ -26,7 +27,7 @@ public class IJViewerTest implements PlugIn{
 	    univ.show();
 
 	    // Add the image as a volume rendering
-	    Content c = univ.addMesh(imp);
+	    Content c = univ.addVoltex(imp);
 
 	    // Display the image as orthslices
 	    //c.displayAs(Content.ORTHO);
