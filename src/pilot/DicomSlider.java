@@ -351,7 +351,7 @@ public class DicomSlider {
 	        BufferedImage[] floodSlices = flooding.getFloodSlices();
 			try {
 				out = new BufferedOutputStream(new FileOutputStream(tiffF));
-				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(dicomFiles[0]), .10);
+				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(floodSlices[0]), .10);
 				BufferedImage convertedImg = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 			    convertedImg.getGraphics().drawImage(bi, 0, 0, null);
 				bi = convertedImg;
@@ -362,8 +362,8 @@ public class DicomSlider {
 		        Vector<BufferedImage> extra = new Vector<BufferedImage>();
 		        BufferedImage temp;
 		        BufferedImage start;
-		        for(int i = 2; i < dicomFiles.length; i+=2){
-		        	start = ImageJConstruction.resize(toBufferedImage(dicomFiles[i]), .10);
+		        for(int i = 2; i < floodSlices.length; i+=2){
+		        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[i]), .10);
 					temp = new BufferedImage(start.getWidth(), start.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 				    temp.getGraphics().drawImage(start, 0, 0, null);
 		        	extra.add(temp);
