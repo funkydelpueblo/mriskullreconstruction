@@ -81,6 +81,10 @@ public class DicomSlider {
 		buildButton.addActionListener(new TryConstruct());
 		panel.add(buildButton, "wrap");
 		
+		JButton imageJButton = new JButton("Render in ImageJ");
+		imageJButton.addActionListener(new TryImageJ());
+		panel.add(imageJButton, "wrap");
+		
 		openButton.addActionListener(new OpenDirectoryListener(panel));
 		//flipButton.addActionListener(new FlipSlicesListener());
 		slider.addChangeListener(new ImageSlideListener());
@@ -300,6 +304,20 @@ public class DicomSlider {
 		public void actionPerformed(ActionEvent e) {
 			java.util.ArrayList<Point3d> floodPoints = flooding.getPoints();
 			SkullBuilder.constructSkullShowWindow(floodPoints);
+		}
+	}
+	
+	public class TryImageJ implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			BufferedImage[] bis = new BufferedImage[10];
+			for(int i = 0; i < 10; i++){
+				bis[i] = toBufferedImage(dicomFiles[i]);
+			}
+			FoolishSingleton.setImages(bis);
+			ImageJConstruction ijc = new ImageJConstruction();
+			ijc.openAndConstruct();
 		}
 	}
 	
