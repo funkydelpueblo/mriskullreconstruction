@@ -41,17 +41,20 @@ public class ImageJConstruction implements PlugIn{
 		}
 		
 	    // Open an image
-	    ImagePlus imp = new ImagePlus("stack", resize(images[1], RESIZE));
+	    ImagePlus imp = new ImagePlus("stack", stack);
 	    //new StackConverter(imp).convertToGray8();
 	    System.out.println("Resized.");
+	    new StackConverter(imp).convertToGray8();
+	    imp.setDimensions(1, stack.getSize(), 1);
 	    
 	    // Create a universe and show it
 	    Image3DUniverse univ = new Image3DUniverse();
 	    univ.show();
+	    //imp.show();
+	    //System.out.println(imp.getBufferedImage());
 
 	    // Add the image as a volume rendering
-	    //new StackConverter(imp).convertToGray8();
-	    //univ.addVoltex(imp);
+	    univ.addVoltex(imp);
 	}
 	
 	public static BufferedImage resize(BufferedImage img, double pct) { 
