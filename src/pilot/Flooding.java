@@ -14,10 +14,12 @@ public class Flooding {
 	
 	private java.util.ArrayList<Point3d> points;
 	private BufferedImage[] floodSlices;
+	private BufferedImage[] cutawaySlices;
 	
 	public Flooding(int stack){
 		points = new java.util.ArrayList<Point3d>();
 		floodSlices = new BufferedImage[stack];
+		cutawaySlices = new BufferedImage[stack]; //render full head, w/ cutaway for skull
 	}
 	
 	public java.util.ArrayList<Point3d> getPoints(){
@@ -26,6 +28,10 @@ public class Flooding {
 	
 	public BufferedImage[] getFloodSlices(){
 		return this.floodSlices;
+	}
+	
+	public BufferedImage[] getCutawaySlices(){
+		return this.cutawaySlices;
 	}
 	
 	/**
@@ -61,7 +67,23 @@ public class Flooding {
 			}
 		}
 		
+		// 3. Build cutaway skull
+		int[][] cutawayLocs = new int[pixels.length][pixels[0].length];
+		double m = (YR - YL) / (pixels[0].length - 0.0);
+		double b = YL;
+		for(int i = 0; i < cutawayLocs.length; i++){
+			for(int j = 0; j < cutawayLocs[0].length; j++){
+				double y = (m * j) + b;
+				if(i < y){
+					cutawayLocs[i][j] = floodLocs[i][j];
+				}else{
+					cutawayLocs[i][j] = pixels[i][j];
+				}
+			}
+		}
+		
 		floodSlices[index] = ImageProcessing.getImage(fixBadRotation(floodLocs));
+		cutawaySlices[index] = ImageProcessing.getImage(fixBadRotation(cutawayLocs));
 		return ImageProcessing.getImage(fixBadRotation(pixels));
 	}
 	

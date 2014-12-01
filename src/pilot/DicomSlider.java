@@ -51,6 +51,7 @@ public class DicomSlider {
 	JButton buildButton;
 	JButton floodButton;
 	JButton exportButton;
+	JButton exportCutButton;
 	JLabel imageLabel;
 	JSlider slider;
 	
@@ -95,9 +96,13 @@ public class DicomSlider {
 		floodButton.addActionListener(new TryFlood());
 		floodButton.setEnabled(false);
 		
-		exportButton= new JButton(".tiff save (test)");
-		exportButton.addActionListener(new TryTiff());
+		exportButton= new JButton("Export skull");
+		exportButton.addActionListener(new TryTiff(false));
 		exportButton.setEnabled(false);
+		
+		exportCutButton= new JButton("Export skull (cutaway)");
+		exportCutButton.addActionListener(new TryTiff(true));
+		exportCutButton.setEnabled(false);
 		
 		// Steps Panel
 		JPanel stepsPanel = new JPanel();
@@ -112,6 +117,7 @@ public class DicomSlider {
 		stepsPanel.add(floodButton, "wrap");
 		stepsPanel.add(new JLabel("<html>5. Export for viewing</html"), "wrap");
 		stepsPanel.add(exportButton, "wrap");
+		stepsPanel.add(exportCutButton, "wrap");
 		stepsPanel.add(new JLabel("<html>6. Open in ImageJ (external)</html>"), "wrap");
 		
 		panel.add(stepsPanel, "east");
@@ -249,7 +255,7 @@ public class DicomSlider {
 			//if (!source.getValueIsAdjusting()) {
 		        int slice = (int)source.getValue();
 		        BufferedImage bi = toBufferedImage(dicomFiles[slice]);
-		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(bi, new java.awt.Point(0, X_LINE), new java.awt.Point(bi.getWidth(), Y_LINE))));
+		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(bi, new java.awt.Point(0, X_LINE), new java.awt.Point(bi.getWidth(), Y_LINE), 127, 5)));
 		    //}
 		}
 		
@@ -308,6 +314,10 @@ public class DicomSlider {
 		adjustPlane.createAndShowGUI();
 	}
 	
+	public void setNoiseLevel(int noise){
+		this.NOISE_END = noise;
+	}
+	
 	public void setLinePoints(int left, int right){
 		System.out.println("Left: " + left + " Right: " + right);
 		this.X_LINE = left;
@@ -326,7 +336,7 @@ public class DicomSlider {
 	
 	int X_LINE = 100;
 	int Y_LINE = 200;
-	final int NOISE_END = 10;
+	int NOISE_END = 10;
 	
 	private Flooding flooding;
 	//private java.util.ArrayList<java.util.ArrayList<Point3d>> floodPoints;
@@ -337,6 +347,7 @@ public class DicomSlider {
 		public void actionPerformed(ActionEvent e) {
 			SwingUtilities.invokeLater(() -> floodButton.setEnabled(false));
 			SwingUtilities.invokeLater(() -> exportButton.setEnabled(true));
+			SwingUtilities.invokeLater(() -> exportCutButton.setEnabled(true));
 
 			flooding = new Flooding(dicomFiles.length);
 			for(int i = 0; i < dicomFiles.length; i++){
@@ -347,39 +358,27 @@ public class DicomSlider {
 		}
 	}
 	
-	public class TryConstruct implements ActionListener{
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			java.util.ArrayList<Point3d> floodPoints = flooding.getPoints();
-			SkullBuilder.constructSkullShowWindow(floodPoints);
-		}
-	}
-	
-	public class TryImageJ implements ActionListener{
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			/*BufferedImage[] bis = new BufferedImage[10];
-			for(int i = 75; i < 85; i++){
-				bis[i-75] = toBufferedImage(dicomFiles[i]);
-			}
-			FoolishSingleton.setImages(bis);
-			ImageJConstruction ijc = new ImageJConstruction();
-			ijc.openAndConstruct();*/
-			IJViewerTest.main(null);
-		}
-	}
-	
-	final double RESIZE = .1;
+	final double RESIZE = 0.5;
 	
 	public class TryTiff implements ActionListener{
 
+		private boolean cutaway;
+		
+		public TryTiff(boolean cutaway){
+			this.cutaway = cutaway;
+		}
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {	
 			File tiffF = new File("/Users/aaron/Desktop/test.tif");
 	        BufferedOutputStream out;
-	        BufferedImage[] floodSlices = flooding.getFloodSlices();
+	        BufferedImage[] floodSlices;
+	        if(!cutaway){
+	        	floodSlices  = flooding.getFloodSlices();
+	        }else{
+	        	floodSlices = flooding.getCutawaySlices();
+	        }
+	        
 			try {
 				out = new BufferedOutputStream(new FileOutputStream(tiffF));
 				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(floodSlices[0]), RESIZE);
@@ -393,8 +392,8 @@ public class DicomSlider {
 		        Vector<BufferedImage> extra = new Vector<BufferedImage>();
 		        BufferedImage temp;
 		        BufferedImage start;
-		        for(int i = 2; i < floodSlices.length; i+=2){
-		        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[i]), RESIZE);
+		        for(double i = 2.0; i < floodSlices.length; i+=0.50){
+		        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[(int)Math.floor(i)]), RESIZE);
 					temp = new BufferedImage(start.getWidth(), start.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 				    temp.getGraphics().drawImage(start, 0, 0, null);
 		        	extra.add(temp);

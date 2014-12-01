@@ -36,10 +36,10 @@ public class OpenCVUtil {
 		return image;
 	}
 	
-	public static BufferedImage addLine(BufferedImage img, Point start, Point end){
+	public static BufferedImage addLine(BufferedImage img, Point start, Point end, double color, int thick){
 		Mat mat = bufferedImageToMat(img);
 		org.opencv.imgproc.Imgproc.line(mat, new org.opencv.core.Point(start.getX(),  start.getY()),
-				 new org.opencv.core.Point(end.getX(),  end.getY()), new Scalar(127, 127, 127), 5);
+				 new org.opencv.core.Point(end.getX(),  end.getY()), new Scalar(color, color, color), thick);
 		return matToBufferedImage(mat, BufferedImage.TYPE_BYTE_GRAY);
 	}
 }
