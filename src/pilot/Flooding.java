@@ -131,7 +131,6 @@ public class Flooding {
 				result.add(p);
 			}
 			yStart--;
-			System.out.print(yStart);
 		}
 		
 		return result;

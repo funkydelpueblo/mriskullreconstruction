@@ -49,6 +49,8 @@ public class DicomSlider {
 	JButton openButton;
 	JButton flipButton;
 	JButton buildButton;
+	JButton floodButton;
+	JButton exportButton;
 	JLabel imageLabel;
 	JSlider slider;
 	
@@ -89,11 +91,13 @@ public class DicomSlider {
 		
 		panel.add(progressPanel, "cell 0 0");
 		
-		JButton tryFlood = new JButton("Isolate skull");
-		tryFlood.addActionListener(new TryFlood());
+		floodButton = new JButton("Isolate skull");
+		floodButton.addActionListener(new TryFlood());
+		floodButton.setEnabled(false);
 		
-		JButton tiff = new JButton(".tiff save (test)");
-		tiff.addActionListener(new TryTiff());
+		exportButton= new JButton(".tiff save (test)");
+		exportButton.addActionListener(new TryTiff());
+		exportButton.setEnabled(false);
 		
 		// Steps Panel
 		JPanel stepsPanel = new JPanel();
@@ -105,9 +109,9 @@ public class DicomSlider {
 		stepsPanel.add(new JLabel("<html>2. Threshold image (opens automatically)</html>"), "wrap");
 		stepsPanel.add(new JLabel("<html>3. Adjust cutoff plane (opens automatically)</html>"), "wrap");
 		stepsPanel.add(new JLabel("<html>4. Isolate skull</html>"), "wrap");
-		stepsPanel.add(tryFlood, "wrap");
+		stepsPanel.add(floodButton, "wrap");
 		stepsPanel.add(new JLabel("<html>5. Export for viewing</html"), "wrap");
-		stepsPanel.add(tiff, "wrap");
+		stepsPanel.add(exportButton, "wrap");
 		stepsPanel.add(new JLabel("<html>6. Open in ImageJ (external)</html>"), "wrap");
 		
 		panel.add(stepsPanel, "east");
@@ -115,6 +119,7 @@ public class DicomSlider {
 		openButton.addActionListener(new OpenDirectoryListener(panel));
 		//flipButton.addActionListener(new FlipSlicesListener());
 		slider.addChangeListener(new ImageSlideListener());
+		slider.setEnabled(false);
 		
 		return panel;
 	}
@@ -244,7 +249,7 @@ public class DicomSlider {
 			//if (!source.getValueIsAdjusting()) {
 		        int slice = (int)source.getValue();
 		        BufferedImage bi = toBufferedImage(dicomFiles[slice]);
-		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(bi, new java.awt.Point(0, X_LINE), new java.awt.Point(bi.getWidth(), bi.getHeight() - Y_LINE))));
+		        imageLabel.setIcon(new ImageIcon(OpenCVUtil.addLine(bi, new java.awt.Point(0, X_LINE), new java.awt.Point(bi.getWidth(), Y_LINE))));
 		    //}
 		}
 		
@@ -276,6 +281,9 @@ public class DicomSlider {
 				imageLabel.setIcon(new ImageIcon(dicomFiles[0]));
 				resetProgress();
 				
+				//Enable proper components
+				SwingUtilities.invokeLater(() -> slider.setEnabled(true));
+				
 				//Open threshold window
 				ThresholdSlider thresholdSlider = new ThresholdSlider(dicomFiles, DicomSlider.this);
 				thresholdSlider.createAndShowGUI();
@@ -284,6 +292,8 @@ public class DicomSlider {
 		};
 		loadWorker.execute();
 	}
+	
+	AdjustPlaneSlider adjustPlane;
 	
 	public void thresholdImages(int threshold, boolean openclose){
 		for(int i = 0; i < dicomFiles.length; i++){
@@ -294,6 +304,15 @@ public class DicomSlider {
 			imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 		}
 		System.out.println("Done thresholding.");
+		adjustPlane = new AdjustPlaneSlider(dicomFiles, this);
+		adjustPlane.createAndShowGUI();
+	}
+	
+	public void setLinePoints(int left, int right){
+		System.out.println("Left: " + left + " Right: " + right);
+		this.X_LINE = left;
+		this.Y_LINE = right;
+		SwingUtilities.invokeLater(() -> floodButton.setEnabled(true));
 	}
 	
 	private void resetProgress(){
@@ -305,8 +324,8 @@ public class DicomSlider {
 	// ACTUAL INTERESTING PROCESSING STUFF INITIATED HERE
 	//
 	
-	final int X_LINE = 100;
-	final int Y_LINE = 200;
+	int X_LINE = 100;
+	int Y_LINE = 200;
 	final int NOISE_END = 10;
 	
 	private Flooding flooding;
@@ -316,6 +335,9 @@ public class DicomSlider {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			SwingUtilities.invokeLater(() -> floodButton.setEnabled(false));
+			SwingUtilities.invokeLater(() -> exportButton.setEnabled(true));
+
 			flooding = new Flooding(dicomFiles.length);
 			for(int i = 0; i < dicomFiles.length; i++){
 				dicomFiles[i] = flooding.floodToImage(toBufferedImage(dicomFiles[i]), i, X_LINE, Y_LINE, NOISE_END);
@@ -349,6 +371,8 @@ public class DicomSlider {
 		}
 	}
 	
+	final double RESIZE = .1;
+	
 	public class TryTiff implements ActionListener{
 
 		@Override
@@ -358,7 +382,7 @@ public class DicomSlider {
 	        BufferedImage[] floodSlices = flooding.getFloodSlices();
 			try {
 				out = new BufferedOutputStream(new FileOutputStream(tiffF));
-				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(floodSlices[0]), .10);
+				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(floodSlices[0]), RESIZE);
 				BufferedImage convertedImg = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 			    convertedImg.getGraphics().drawImage(bi, 0, 0, null);
 				bi = convertedImg;
@@ -370,7 +394,7 @@ public class DicomSlider {
 		        BufferedImage temp;
 		        BufferedImage start;
 		        for(int i = 2; i < floodSlices.length; i+=2){
-		        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[i]), .10);
+		        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[i]), RESIZE);
 					temp = new BufferedImage(start.getWidth(), start.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 				    temp.getGraphics().drawImage(start, 0, 0, null);
 		        	extra.add(temp);
