@@ -70,10 +70,10 @@ public class DicomSlider {
 		slider.setPaintTicks(true);
 		slider.setPreferredSize(new Dimension(500, 40));
 		
-		MigLayout layout = new MigLayout("", "[320px][320px]", "[][400px][40px]");
+		MigLayout layout = new MigLayout("", "20px[320px][320px]", "12px[][400px][40px]12px");
 		JPanel panel = new JPanel();
 		panel.setLayout(layout);
-		panel.add(openButton, "cell 0 0");
+		//panel.add(openButton, "cell 0 0");
 		//panel.add(flipButton, "cell 1 0");
 		panel.add(imageLabel, "cell 0 1 2 1");
 		panel.add(slider, "cell 0 2 2 1");
@@ -87,23 +87,30 @@ public class DicomSlider {
 		progressPanel.add(progress, "cell 0 0");
 		progressPanel.add(progressLabel, "cell 0 1");
 		
-		panel.add(progressPanel, "cell 1 0");
+		panel.add(progressPanel, "cell 0 0");
 		
-		JButton tryFlood = new JButton("Flood above line");
+		JButton tryFlood = new JButton("Isolate skull");
 		tryFlood.addActionListener(new TryFlood());
-		panel.add(tryFlood, "wrap");
-		
-		/*buildButton = new JButton("Reconstruct skull (test)");
-		buildButton.addActionListener(new TryConstruct());
-		panel.add(buildButton, "wrap");*/
 		
 		JButton tiff = new JButton(".tiff save (test)");
 		tiff.addActionListener(new TryTiff());
-		panel.add(tiff, "wrap");
 		
-		JButton imageJButton = new JButton("Render in ImageJ");
-		imageJButton.addActionListener(new TryImageJ());
-		panel.add(imageJButton, "wrap");
+		// Steps Panel
+		JPanel stepsPanel = new JPanel();
+		MigLayout stepsLayout = new MigLayout();
+		stepsPanel.setLayout(stepsLayout);
+		stepsPanel.add(new JLabel("<html><big><b>Directions<b></big></html>"), "wrap");
+		stepsPanel.add(new JLabel("<html>1. Open DICOM directory</html>"), "wrap");
+		stepsPanel.add(openButton, "wrap");
+		stepsPanel.add(new JLabel("<html>2. Threshold image (opens automatically)</html>"), "wrap");
+		stepsPanel.add(new JLabel("<html>3. Adjust cutoff plane (opens automatically)</html>"), "wrap");
+		stepsPanel.add(new JLabel("<html>4. Isolate skull</html>"), "wrap");
+		stepsPanel.add(tryFlood, "wrap");
+		stepsPanel.add(new JLabel("<html>5. Export for viewing</html"), "wrap");
+		stepsPanel.add(tiff, "wrap");
+		stepsPanel.add(new JLabel("<html>6. Open in ImageJ (external)</html>"), "wrap");
+		
+		panel.add(stepsPanel, "east");
 		
 		openButton.addActionListener(new OpenDirectoryListener(panel));
 		//flipButton.addActionListener(new FlipSlicesListener());
