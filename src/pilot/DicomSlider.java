@@ -295,11 +295,11 @@ public class DicomSlider {
 	
 	AdjustPlaneSlider adjustPlane;
 	
-	public void thresholdImages(int threshold, boolean openclose){
+	public void thresholdImages(int threshold, int openclose){
 		for(int i = 0; i < dicomFiles.length; i++){
 			dicomFiles[i] = ImageProcessing.threshold(toBufferedImage(dicomFiles[i]), threshold);
-			if(openclose){
-				dicomFiles[i] = ImageProcessing.openThenClose(toBufferedImage(dicomFiles[i]));
+			if(openclose > 0){
+				dicomFiles[i] = ImageProcessing.openThenClose(toBufferedImage(dicomFiles[i]), openclose);
 			}
 			imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
 		}

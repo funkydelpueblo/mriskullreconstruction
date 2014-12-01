@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -28,6 +29,7 @@ public class ThresholdSlider {
 	JLabel thLabel;
 	JButton accept;
 	JCheckBox openclose;
+	JTextField ocamt;
 	
 	BufferedImage sliceImage;
 	DicomSlider parent;
@@ -66,12 +68,15 @@ public class ThresholdSlider {
 		imageSlider = new JSlider(0, baseImages.length, START_SLICE);
 		imageSlider.addChangeListener(new ImageSlideListener());
 		
+		ocamt = new JTextField("0");
+		
 		panel.add(imageLabel, "cell 0 0 5 1");
 		panel.add(slider, "cell 0 1");
 		panel.add(thLabel, "cell 1 1");
 		panel.add(accept, "cell 2 1");
-		panel.add(new JLabel("Open & Close?"), "cell 3 1");
-		panel.add(openclose, "cell 4 1");
+		panel.add(new JLabel("Open & Close"), "cell 3 1");
+		//panel.add(openclose, "cell 4 1");
+		panel.add(ocamt, "cell 4 1");
 		
 		panel.add(imageSlider, "cell 0 2 5 1");
 		
@@ -88,9 +93,10 @@ public class ThresholdSlider {
 			if (source.getValueIsAdjusting()) {
 		       
 		        sliceImage = ImageProcessing.threshold(baseImages[slice], th);
-		        
-		        if(openclose.isSelected()){
-			        sliceImage = ImageProcessing.openThenClose(sliceImage); //Open/Close to clean?
+		       
+		        int oc = Integer.parseInt(ocamt.getText());
+		        if(oc > 0){
+			        sliceImage = ImageProcessing.openThenClose(sliceImage, oc); //Open/Close to clean?
 		        }
 		        
 		        SwingUtilities.invokeLater(() -> imageLabel.setIcon(new ImageIcon(sliceImage)));
@@ -104,8 +110,9 @@ public class ThresholdSlider {
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			sliceImage = ImageProcessing.threshold(baseImages[imageSlider.getValue()], slider.getValue());
-			if(openclose.isSelected()){
-		        sliceImage = ImageProcessing.openThenClose(sliceImage); //Open/Close to clean?
+			int oc = Integer.parseInt(ocamt.getText());
+	        if(oc > 0){
+		        sliceImage = ImageProcessing.openThenClose(sliceImage, oc); //Open/Close to clean?
 	        }
 			SwingUtilities.invokeLater(() -> imageLabel.setIcon(new ImageIcon(sliceImage)));
 		}
@@ -116,7 +123,7 @@ public class ThresholdSlider {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			parent.thresholdImages(slider.getValue(), openclose.isSelected());
+			parent.thresholdImages(slider.getValue(), Integer.parseInt(ocamt.getText()));
 			frame.setVisible(false);
 			frame.dispose();
 		}

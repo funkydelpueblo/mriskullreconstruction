@@ -178,12 +178,13 @@ public class ImageProcessing {
 	
 	final static int elem_size = 1;
 	
-	public static BufferedImage openThenClose(BufferedImage input){
+	public static BufferedImage openThenClose(BufferedImage input, int amt){
 		Mat A = OpenCVUtil.bufferedImageToMat(input);
 		Mat B = new Mat(A.rows(), A.cols(), A.type());
 		
-        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2*elem_size + 1, 2*elem_size+1));
-        //Open
+        //Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2*elem_size + 1, 2*elem_size+1));
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(amt, amt));
+		//Open
         Imgproc.erode(A, B, element);
         Imgproc.dilate(B, A, element);
         //Close
