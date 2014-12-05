@@ -31,7 +31,6 @@ import javax.vecmath.Point3d;
 
 import org.opencv.core.Core;
 
-import testdev.IJViewerTest;
 import util.ImageProcessing;
 import util.OpenCVUtil;
 import external.DicomHeaderReader;
@@ -421,7 +420,7 @@ public class DicomSlider {
 			        
 					try {
 						out = new BufferedOutputStream(new FileOutputStream(tiffF));
-						BufferedImage bi = ImageJConstruction.resize(toBufferedImage(floodSlices[0]), RESIZE);
+						BufferedImage bi = resize(toBufferedImage(floodSlices[0]), RESIZE);
 						BufferedImage convertedImg = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 					    convertedImg.getGraphics().drawImage(bi, 0, 0, null);
 						bi = convertedImg;
@@ -433,7 +432,7 @@ public class DicomSlider {
 				        BufferedImage temp;
 				        BufferedImage start;
 				        for(double i = 2.0; i < floodSlices.length; i+=0.50){
-				        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[(int)Math.floor(i)]), RESIZE);
+				        	start = resize(toBufferedImage(floodSlices[(int)Math.floor(i)]), RESIZE);
 							temp = new BufferedImage(start.getWidth(), start.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 						    temp.getGraphics().drawImage(start, 0, 0, null);
 				        	extra.add(temp);
@@ -458,6 +457,17 @@ public class DicomSlider {
 		}
 		
 	}
+	
+	public static BufferedImage resize(BufferedImage img, double pct) { 
+	    Image tmp = img.getScaledInstance((int)(img.getWidth() * pct), (int)(img.getHeight() * pct), Image.SCALE_SMOOTH);
+	    BufferedImage dimg = new BufferedImage((int)(img.getWidth() * pct), (int)(img.getHeight() * pct), BufferedImage.TYPE_INT_ARGB);
+
+	    Graphics2D g2d = dimg.createGraphics();
+	    g2d.drawImage(tmp, 0, 0, null);
+	    g2d.dispose();
+
+	    return dimg;
+	}  
 	
 	/**
 	 * Converts a given Image into a BufferedImage
