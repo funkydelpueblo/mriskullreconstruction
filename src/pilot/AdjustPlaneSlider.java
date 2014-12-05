@@ -17,6 +17,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import external.DicomReader;
+import util.AdapterForBuild;
 import util.ImageProcessing;
 import util.OpenCVUtil;
 import net.miginfocom.swing.MigLayout;
@@ -24,14 +26,14 @@ import net.miginfocom.swing.MigLayout;
 public class AdjustPlaneSlider {
 	
 	JFrame frame;
-	DicomSlider parent;
+	AdapterForBuild parent;
 	BufferedImage[] baseImages;
 	
-	public AdjustPlaneSlider(Image[] images, DicomSlider dicomSlider){
+	public AdjustPlaneSlider(Image[] images, AdapterForBuild dicomSlider){
 		parent = dicomSlider;
 		baseImages = new BufferedImage[images.length];
 		for(int i = 0; i < images.length; i++){
-			baseImages[i] = DicomSlider.toBufferedImage(images[i]);
+			baseImages[i] = ImageProcessing.toBufferedImage(images[i]);
 		}
 	}
 	

@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import util.AdapterForBuild;
 import util.ImageProcessing;
 import net.miginfocom.swing.MigLayout;
 
@@ -32,16 +33,16 @@ public class ThresholdSlider {
 	JTextField ocamt;
 	
 	BufferedImage sliceImage;
-	DicomSlider parent;
+	AdapterForBuild parent;
 	
 	JSlider imageSlider;
 	
 	
-	public ThresholdSlider(Image[] images, DicomSlider ds){
+	public ThresholdSlider(Image[] images, AdapterForBuild ds){
 		parent = ds;
 		baseImages = new BufferedImage[images.length];
 		for(int i = 0; i < images.length; i++){
-			baseImages[i] = DicomSlider.toBufferedImage(images[i]);
+			baseImages[i] = ImageProcessing.toBufferedImage(images[i]);
 		}
 		START_SLICE = (int)(images.length / 2);
 	}

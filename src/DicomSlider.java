@@ -1,5 +1,7 @@
 
 
+
+
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -34,6 +36,7 @@ import org.opencv.core.Core;
 import pilot.AdjustPlaneSlider;
 import pilot.Flooding;
 import pilot.ThresholdSlider;
+import util.AdapterForBuild;
 import util.ImageProcessing;
 import util.OpenCVUtil;
 import external.DicomHeaderReader;
@@ -45,7 +48,7 @@ import non_com.media.jai.codec.TIFFCodec;
 import non_com.media.jai.codec.TIFFEncodeParam;
 import non_com.media.jai.codec.TIFFImageEncoder;
 
-public class DicomSlider {
+public class DicomSlider implements AdapterForBuild{
 
 	JFileChooser fileChooser;
 	JButton openButton;
