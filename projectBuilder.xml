@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SkullReconstruction.makejar" default="makejar" basedir=".">
+
+	<property name="src.dir" value="src"/>
+  	<property name="lib.dir" value="lib"/>
+
+	<property name="build.dir" value="build"/>
+	<property name="classes.dir" value="${build.dir}/classes"/>
+	<property name="jar.dir" value="${build.dir}/jar"/>
+	
+    <path id="classpath">
+        <fileset dir="${lib.dir}">
+       	 <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+  <target name ="makejar" description="Create a jar for the Skull Builder project">
+    <jar jarfile="MRISkullReconstruction.jar" basedir="bin">
+    	<include name="*.class"/>
+    	<include name="*.jar"/>
+    	<include name="*.dylib"/>
+    	<manifest>
+    		<attribute name="Class-Path" value="${lib.dir}"/>
+        	<attribute name="Main-Class" value="pilot.DicomSlider"/>
+        </manifest>
+        <zipgroupfileset  dir="${lib.dir}">
+        	<include name="**/*.jar"/>
+        </zipgroupfileset>   
+    </jar>
+  </target>
+</project>

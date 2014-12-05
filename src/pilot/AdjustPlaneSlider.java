@@ -27,8 +27,8 @@ public class AdjustPlaneSlider {
 	DicomSlider parent;
 	BufferedImage[] baseImages;
 	
-	public AdjustPlaneSlider(Image[] images, DicomSlider ds){
-		parent = ds;
+	public AdjustPlaneSlider(Image[] images, DicomSlider dicomSlider){
+		parent = dicomSlider;
 		baseImages = new BufferedImage[images.length];
 		for(int i = 0; i < images.length; i++){
 			baseImages[i] = DicomSlider.toBufferedImage(images[i]);
@@ -41,7 +41,7 @@ public class AdjustPlaneSlider {
 	// [+] noise [-]
 	// explanation
 	// [OK]
-	
+
 	JLabel imageLabel;
 	JSlider imageSlider;
 	
