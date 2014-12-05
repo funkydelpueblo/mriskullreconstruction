@@ -1,6 +1,7 @@
-
-
-
+/**
+ * DicomSlider.java
+ * Main class for the MRI Skull reconstruction
+ */
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -81,8 +82,6 @@ public class DicomSlider implements AdapterForBuild{
 		MigLayout layout = new MigLayout("", "20px[320px][320px]", "12px[][400px][40px]12px");
 		JPanel panel = new JPanel();
 		panel.setLayout(layout);
-		//panel.add(openButton, "cell 0 0");
-		//panel.add(flipButton, "cell 1 0");
 		panel.add(imageLabel, "cell 0 1 2 1");
 		panel.add(slider, "cell 0 2 2 1");
 		
@@ -129,7 +128,6 @@ public class DicomSlider implements AdapterForBuild{
 		panel.add(stepsPanel, "east");
 		
 		openButton.addActionListener(new OpenDirectoryListener(panel));
-		//flipButton.addActionListener(new FlipSlicesListener());
 		slider.addChangeListener(new ImageSlideListener());
 		slider.setEnabled(false);
 		
@@ -504,14 +502,9 @@ public class DicomSlider implements AdapterForBuild{
 	JFrame frame;
 	
 	private void createAndShowGUI() {
-        //Create and set up the window.
         frame = new JFrame("Dicom Slider");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
- 
-        //Add content to the window.
         frame.add(createPanel());
- 
-        //Display the window.
         frame.pack();
         frame.setVisible(true);
     }

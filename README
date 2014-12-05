@@ -1,0 +1,27 @@
+=================================
+MRI Skull Reconstruction
+by Aaron Zemach (azemach@wustl.edu)
+Last updated 12/5/14
+Final project for WUSTL CSE 554A
+=================================
+
+ABOUT
+---------------------------------
+This project aims to allow for quick construction of a 
+3-D model for the upper part of a human skull, with minimal
+and basic user interaction required, based solely on
+MRI imaging (as opposed to a CT scan). It was developed
+for Dr. Tao Ju's "Geometric Computing for Bioscience"
+class at Washington University in St. Louis. 
+
+
+REQUIREMENTS
+---------------------------------
+This project depends on 4 libraries:
+* JAI codec (for TIFF image writing)
+* MigLayout (for GUI)
+* VecMath
+* OpenCV Java 3.0.0
+
+These four libraries must be referenced, and it is likely
+necessary to include the native bindings for OpenCV.

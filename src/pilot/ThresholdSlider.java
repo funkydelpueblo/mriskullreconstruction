@@ -76,10 +76,10 @@ public class ThresholdSlider {
 		panel.add(thLabel, "cell 1 1");
 		panel.add(accept, "cell 2 1");
 		panel.add(new JLabel("Open & Close"), "cell 3 1");
-		//panel.add(openclose, "cell 4 1");
 		panel.add(ocamt, "cell 4 1");
 		
-		panel.add(imageSlider, "cell 0 2 5 1");
+		panel.add(new JLabel("Slice"), "cell 0 2");
+		panel.add(imageSlider, "cell 0 2 4 1");
 		
 		return panel;
 	}
@@ -134,13 +134,8 @@ public class ThresholdSlider {
 	JFrame frame;
 	
 	public void createAndShowGUI() {
-        //Create and set up the window.
         frame = new JFrame("Select Threshold");
- 
-        //Add content to the window.
         frame.add(createPanel());
- 
-        //Display the window.
         frame.pack();
         frame.setVisible(true);
     }

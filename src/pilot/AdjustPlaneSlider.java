@@ -187,13 +187,8 @@ public class AdjustPlaneSlider {
 	}
 	
 	public void createAndShowGUI() {
-        //Create and set up the window.
-        frame = new JFrame("Adjust Plane");
- 
-        //Add content to the window.
+		frame = new JFrame("Adjust Plane");
         frame.add(createPanel());
- 
-        //Display the window.
         frame.pack();
         frame.setVisible(true);
     }
