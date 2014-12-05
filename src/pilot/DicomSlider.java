@@ -83,6 +83,7 @@ public class DicomSlider {
 		
 		//Progress
 		progress = new JProgressBar();
+		progress.setPreferredSize(new Dimension(300, 15));
 		progressLabel = new JLabel();
 		MigLayout progressLayout = new MigLayout("", "[]", "[][]");
 		JPanel progressPanel = new JPanel();
@@ -345,16 +346,36 @@ public class DicomSlider {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			SwingUtilities.invokeLater(() -> floodButton.setEnabled(false));
-			SwingUtilities.invokeLater(() -> exportButton.setEnabled(true));
-			SwingUtilities.invokeLater(() -> exportCutButton.setEnabled(true));
+			SwingWorker<Image[], Image[]> floodWorker = new SwingWorker<Image[], Image[]>(){
 
-			flooding = new Flooding(dicomFiles.length);
-			for(int i = 0; i < dicomFiles.length; i++){
-				dicomFiles[i] = flooding.floodToImage(toBufferedImage(dicomFiles[i]), i, X_LINE, Y_LINE, NOISE_END);
-				imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
-			}
-			System.out.println("Done flooding.");
+				@Override
+				protected Image[] doInBackground() throws Exception {
+					SwingUtilities.invokeLater(() -> floodButton.setEnabled(false));
+					SwingUtilities.invokeLater(() -> exportButton.setEnabled(true));
+					SwingUtilities.invokeLater(() -> exportCutButton.setEnabled(true));
+
+					SwingUtilities.invokeLater(() -> progressLabel.setText("Isolating skull..."));
+					SwingUtilities.invokeLater(() -> progress.setValue(0));
+					SwingUtilities.invokeLater(() -> progress.setMinimum(0));
+					SwingUtilities.invokeLater(() -> progress.setMaximum(dicomFiles.length)); //feedback
+					
+					flooding = new Flooding(dicomFiles.length);
+					for(int i = 0; i < dicomFiles.length; i++){
+						dicomFiles[i] = flooding.floodToImage(toBufferedImage(dicomFiles[i]), i, X_LINE, Y_LINE, NOISE_END);
+						imageLabel.setIcon(new ImageIcon(dicomFiles[slider.getValue()]));
+						final int t = i;
+						SwingUtilities.invokeLater(() -> progress.setValue(t));
+					}
+					System.out.println("Done flooding.");
+					SwingUtilities.invokeLater(() -> progressLabel.setText(""));
+					SwingUtilities.invokeLater(() -> progress.setValue(0));
+					return dicomFiles;
+				}
+				
+			};
+			
+			floodWorker.execute();
+			
 		}
 	}
 	
@@ -369,41 +390,71 @@ public class DicomSlider {
 		}
 		
 		@Override
-		public void actionPerformed(ActionEvent e) {	
-			File tiffF = new File("/Users/aaron/Desktop/test.tif");
-	        BufferedOutputStream out;
-	        BufferedImage[] floodSlices;
-	        if(!cutaway){
-	        	floodSlices  = flooding.getFloodSlices();
-	        }else{
-	        	floodSlices = flooding.getCutawaySlices();
-	        }
-	        
-			try {
-				out = new BufferedOutputStream(new FileOutputStream(tiffF));
-				BufferedImage bi = ImageJConstruction.resize(toBufferedImage(floodSlices[0]), RESIZE);
-				BufferedImage convertedImg = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-			    convertedImg.getGraphics().drawImage(bi, 0, 0, null);
-				bi = convertedImg;
-			    
-				TIFFEncodeParam param = new TIFFEncodeParam();
-		        param.setTileSize(bi.getWidth(), bi.getHeight());
-		       
-		        Vector<BufferedImage> extra = new Vector<BufferedImage>();
-		        BufferedImage temp;
-		        BufferedImage start;
-		        for(double i = 2.0; i < floodSlices.length; i+=0.50){
-		        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[(int)Math.floor(i)]), RESIZE);
-					temp = new BufferedImage(start.getWidth(), start.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-				    temp.getGraphics().drawImage(start, 0, 0, null);
-		        	extra.add(temp);
-		        }
-		        param.setExtraImages(extra.iterator());
-		        TIFFImageEncoder encoder = (TIFFImageEncoder) TIFFCodec.createImageEncoder("tiff", out, param); 
-		        encoder.encode(bi);
-			} catch (IOException e2) {
-				e2.printStackTrace();
-			}
+		public void actionPerformed(ActionEvent e) {
+			SwingWorker<Object, Object> exportWorker = new SwingWorker<Object, Object>(){
+
+				@Override
+				protected Object doInBackground() throws Exception {
+					System.out.println("EXPORT");
+					final JFileChooser fc = new JFileChooser();
+					int choice = fc.showSaveDialog(DicomSlider.this.frame);
+					
+					if(choice != JFileChooser.APPROVE_OPTION){
+						return null;
+					}
+					
+					//File tiffF = new File("/Users/aaron/Desktop/test.tif");
+			        File tiffF = fc.getSelectedFile();
+					BufferedOutputStream out;
+			        BufferedImage[] floodSlices;
+			        if(!cutaway){
+			        	floodSlices  = flooding.getFloodSlices();
+			        }else{
+			        	floodSlices = flooding.getCutawaySlices();
+			        }
+			        
+			        //Feedback
+			        SwingUtilities.invokeLater(() -> progressLabel.setText("Exporting..."));
+					SwingUtilities.invokeLater(() -> progress.setValue(0));
+					SwingUtilities.invokeLater(() -> progress.setMinimum(0));
+					SwingUtilities.invokeLater(() -> progress.setMaximum(dicomFiles.length)); //feedback
+			        
+					try {
+						out = new BufferedOutputStream(new FileOutputStream(tiffF));
+						BufferedImage bi = ImageJConstruction.resize(toBufferedImage(floodSlices[0]), RESIZE);
+						BufferedImage convertedImg = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+					    convertedImg.getGraphics().drawImage(bi, 0, 0, null);
+						bi = convertedImg;
+					    
+						TIFFEncodeParam param = new TIFFEncodeParam();
+				        param.setTileSize(bi.getWidth(), bi.getHeight());
+				       
+				        Vector<BufferedImage> extra = new Vector<BufferedImage>();
+				        BufferedImage temp;
+				        BufferedImage start;
+				        for(double i = 2.0; i < floodSlices.length; i+=0.50){
+				        	start = ImageJConstruction.resize(toBufferedImage(floodSlices[(int)Math.floor(i)]), RESIZE);
+							temp = new BufferedImage(start.getWidth(), start.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+						    temp.getGraphics().drawImage(start, 0, 0, null);
+				        	extra.add(temp);
+				        	int t = (int)Math.floor(i);
+				        	SwingUtilities.invokeLater(() -> progress.setValue(t));
+				        }
+				        param.setExtraImages(extra.iterator());
+				        TIFFImageEncoder encoder = (TIFFImageEncoder) TIFFCodec.createImageEncoder("tiff", out, param); 
+				        encoder.encode(bi);
+				        
+				        SwingUtilities.invokeLater(() -> progressLabel.setText(""));
+						SwingUtilities.invokeLater(() -> progress.setValue(0));
+					} catch (IOException e2) {
+						e2.printStackTrace();
+					}
+					
+					return null;
+				}
+			};
+			
+			exportWorker.execute();
 		}
 		
 	}
@@ -434,9 +485,11 @@ public class DicomSlider {
 	    return bimage;
 	}
 	
+	JFrame frame;
+	
 	private void createAndShowGUI() {
         //Create and set up the window.
-        JFrame frame = new JFrame("Dicom Slider");
+        frame = new JFrame("Dicom Slider");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
  
         //Add content to the window.
@@ -452,6 +505,7 @@ public class DicomSlider {
         public void run() {
         	//Make sure we access proper OpenCV libraries before anything else!
         	System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        	System.loadLibrary("opencv_java300");
         	
             //Turn off metal's use of bold fonts
             UIManager.put("swing.boldMetal", Boolean.FALSE); 
